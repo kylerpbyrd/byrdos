@@ -1,0 +1,14 @@
+%% Entity-Relationship Diagram for the byrdOS core domain model.
+erDiagram
+  USER ||--o{ SESSION : has
+  USER ||--o{ INTEGRATION : owns
+  INTEGRATION ||--|| CREDENTIAL : has
+  INTEGRATION ||--o{ PROVIDER_CONNECTION : has
+  PROVIDER_CONNECTION ||--o{ ACCOUNT : exposes
+  ACCOUNT ||--o{ BALANCE : records
+  ACCOUNT ||--o{ TRANSACTION : contains
+  TRANSACTION }o--|| CATEGORY : classified-as
+  PROVIDER_CONNECTION ||--o{ SYNC_CURSOR : tracks
+  PROVIDER_CONNECTION ||--o{ SYNC_JOB : runs
+  SYNC_JOB ||--o{ SYNC_JOB_STAGE : contains
+  USER ||--o{ EVENT_LOG : emits

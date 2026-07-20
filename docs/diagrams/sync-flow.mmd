@@ -1,0 +1,25 @@
+%% Data sync flow sequence diagram showing scheduled account and transaction synchronization.
+sequenceDiagram
+  autonumber
+  participant SCH as Scheduler
+  participant Q as Queue
+  participant ORC as Orchestrator
+  participant P as Plaid
+  participant PG as Postgres
+  participant EB as EventBus
+
+  SCH ->> Q: enqueue scheduled-sync
+  Q ->> ORC: dequeue sync job
+  ORC ->> PG: load SyncCursor
+  ORC ->> P: accounts call
+  P -->> ORC: accounts payload
+  ORC ->> PG: upsert accounts
+  ORC ->> EB: emit AccountsSynced
+  ORC ->> P: transactions stream
+  P -->> ORC: transaction batches
+  loop Process batches
+    ORC ->> PG: upsert transactions
+  end
+  ORC ->> PG: update SyncCursor
+  ORC ->> EB: emit TransactionsSynced
+  ORC ->> PG: mark SyncJob completed

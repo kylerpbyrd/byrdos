@@ -1,0 +1,24 @@
+%% Request lifecycle sequence diagram for an authenticated read path with caching.
+sequenceDiagram
+  autonumber
+  participant B as Browser
+  participant E as Vercel Edge
+  participant N as NestJS
+  participant R as Redis Cache
+  participant PG as Postgres
+
+  B ->> E: GET /accounts
+  E ->> N: forward + traceparent
+  N ->> N: AuthGuard verify JWT
+  N ->> N: AccountsController
+  N ->> R: check cache
+  alt cache miss
+    R -->> N: miss
+    N ->> PG: AccountRepo.findByUserId
+    PG -->> N: accounts
+    N ->> R: cache set TTL 60s
+  else cache hit
+    R -->> N: hit
+  end
+  N -->> E: 200 + ETag + Cache-Control
+  E -->> B: 200 OK
