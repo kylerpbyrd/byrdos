@@ -32,3 +32,8 @@ Thumbs.db
 
 # Misc
 *.tsbuildinfo
+
+# Graphify (local extraction cache; graph.json + GRAPH_REPORT.md are tracked)
+graphify-out/cache/
+graphify-out/.graphify_*
+graphify-out/cost.json

@@ -1,0 +1,1019 @@
+{
+  "nodes": [
+    {
+      "label": "ADR-0000: Engineering Principles",
+      "type": "adr",
+      "source_location": "docs/adr/0000-engineering-principles.md",
+      "id": "adr-0000",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0001: Monorepo Stack",
+      "type": "adr",
+      "source_location": "docs/adr/0001-monorepo-typescript-nestjs-nextjs.md",
+      "id": "adr-0001",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0002: PostgreSQL + Drizzle",
+      "type": "adr",
+      "source_location": "docs/adr/0002-postgresql-drizzle.md",
+      "id": "adr-0002",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0003: BullMQ + Redis Sync",
+      "type": "adr",
+      "source_location": "docs/adr/0003-bullmq-redis-sync-pipeline.md",
+      "id": "adr-0003",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0004: Auth.js + JWT Identity",
+      "type": "adr",
+      "source_location": "docs/adr/0004-authjs-jwt-identity.md",
+      "id": "adr-0004",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0005: Provider Abstraction Pattern",
+      "type": "adr",
+      "source_location": "docs/adr/0005-provider-abstraction-pattern.md",
+      "id": "adr-0005",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0006: Outbox Eventing Pattern",
+      "type": "adr",
+      "source_location": "docs/adr/0006-outbox-eventing-pattern.md",
+      "id": "adr-0006",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0007: Aggregator-First (Plaid)",
+      "type": "adr",
+      "source_location": "docs/adr/0007-aggregator-first-integration-plaid.md",
+      "id": "adr-0007",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0008: Credential Encryption Envelope",
+      "type": "adr",
+      "source_location": "docs/adr/0008-credential-encryption-envelope.md",
+      "id": "adr-0008",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0009: Idempotency & Retry Policy",
+      "type": "adr",
+      "source_location": "docs/adr/0009-idempotency-retry-policy.md",
+      "id": "adr-0009",
+      "community": "docs"
+    },
+    {
+      "label": "ADR-0010: Deployment & Migration Runbook",
+      "type": "adr",
+      "source_location": "docs/adr/0010-deployment-migration-runbook.md",
+      "id": "adr-0010",
+      "community": "docs"
+    },
+    {
+      "label": "packages/domain",
+      "type": "package",
+      "owner": "Backend",
+      "id": "pkg-domain",
+      "community": "domain"
+    },
+    {
+      "label": "packages/contracts",
+      "type": "package",
+      "owner": "API",
+      "id": "pkg-contracts",
+      "community": "domain"
+    },
+    {
+      "label": "packages/provider-sdk",
+      "type": "package",
+      "owner": "API",
+      "id": "pkg-provider-sdk",
+      "community": "providers"
+    },
+    {
+      "label": "packages/db",
+      "type": "package",
+      "owner": "Backend",
+      "id": "pkg-db",
+      "community": "backend"
+    },
+    {
+      "label": "packages/auth",
+      "type": "package",
+      "owner": "Security",
+      "id": "pkg-auth",
+      "community": "auth-security"
+    },
+    {
+      "label": "packages/queue",
+      "type": "package",
+      "owner": "Backend",
+      "id": "pkg-queue",
+      "community": "backend"
+    },
+    {
+      "label": "packages/observability",
+      "type": "package",
+      "owner": "DevOps",
+      "id": "pkg-observability",
+      "community": "infrastructure"
+    },
+    {
+      "label": "packages/ui",
+      "type": "package",
+      "owner": "Frontend",
+      "id": "pkg-ui",
+      "community": "frontend"
+    },
+    {
+      "label": "packages/test-utils",
+      "type": "package",
+      "owner": "Testing",
+      "id": "pkg-test-utils",
+      "community": "testing"
+    },
+    {
+      "label": "packages/config",
+      "type": "package",
+      "owner": "DevOps",
+      "id": "pkg-config",
+      "community": "infrastructure"
+    },
+    {
+      "label": "packages/tsconfig",
+      "type": "package",
+      "owner": "DevOps",
+      "id": "pkg-tsconfig",
+      "community": "infrastructure"
+    },
+    {
+      "label": "apps/web (Next.js)",
+      "type": "app",
+      "owner": "Frontend",
+      "id": "app-web",
+      "community": "frontend"
+    },
+    {
+      "label": "apps/api (NestJS)",
+      "type": "app",
+      "owner": "Backend",
+      "id": "app-api",
+      "community": "backend"
+    },
+    {
+      "label": "services/sync-worker",
+      "type": "service",
+      "owner": "Backend",
+      "id": "svc-sync-worker",
+      "community": "backend"
+    },
+    {
+      "label": "services/webhook-worker",
+      "type": "service",
+      "owner": "Backend",
+      "id": "svc-webhook-worker",
+      "community": "backend"
+    },
+    {
+      "label": "services/scheduler",
+      "type": "service",
+      "owner": "Backend",
+      "id": "svc-scheduler",
+      "community": "backend"
+    },
+    {
+      "label": "Architect",
+      "type": "agent",
+      "id": "agent-architect",
+      "community": "planning"
+    },
+    {
+      "label": "API Agent",
+      "type": "agent",
+      "id": "agent-api",
+      "community": "providers"
+    },
+    {
+      "label": "Backend Agent",
+      "type": "agent",
+      "id": "agent-backend",
+      "community": "backend"
+    },
+    {
+      "label": "Frontend Agent",
+      "type": "agent",
+      "id": "agent-frontend",
+      "community": "frontend"
+    },
+    {
+      "label": "Security Agent",
+      "type": "agent",
+      "id": "agent-security",
+      "community": "auth-security"
+    },
+    {
+      "label": "Testing Agent",
+      "type": "agent",
+      "id": "agent-testing",
+      "community": "testing"
+    },
+    {
+      "label": "DevOps Agent",
+      "type": "agent",
+      "id": "agent-devops",
+      "community": "infrastructure"
+    },
+    {
+      "label": "Documentation Agent",
+      "type": "agent",
+      "id": "agent-documentation",
+      "community": "docs"
+    },
+    {
+      "label": "Worker Agent",
+      "type": "agent",
+      "id": "agent-worker",
+      "community": "uncategorized"
+    },
+    {
+      "label": "Scaffolder Agent",
+      "type": "agent",
+      "id": "agent-scaffolder",
+      "community": "uncategorized"
+    },
+    {
+      "label": "Indexer Agent",
+      "type": "agent",
+      "id": "agent-indexer",
+      "community": "uncategorized"
+    },
+    {
+      "label": "Identity",
+      "type": "bounded-context",
+      "id": "ctx-identity",
+      "community": "domain"
+    },
+    {
+      "label": "ProviderLink",
+      "type": "bounded-context",
+      "id": "ctx-provider-link",
+      "community": "domain"
+    },
+    {
+      "label": "Account",
+      "type": "bounded-context",
+      "id": "ctx-account",
+      "community": "domain"
+    },
+    {
+      "label": "Transaction",
+      "type": "bounded-context",
+      "id": "ctx-transaction",
+      "community": "domain"
+    },
+    {
+      "label": "Sync",
+      "type": "bounded-context",
+      "id": "ctx-sync",
+      "community": "domain"
+    },
+    {
+      "label": "Budget (v2)",
+      "type": "bounded-context",
+      "id": "ctx-budget",
+      "community": "domain"
+    },
+    {
+      "label": "Transfer (v2)",
+      "type": "bounded-context",
+      "id": "ctx-transfer",
+      "community": "domain"
+    },
+    {
+      "label": "Insight (v3 AI)",
+      "type": "bounded-context",
+      "id": "ctx-insight",
+      "community": "domain"
+    },
+    {
+      "label": "User",
+      "type": "entity",
+      "id": "ent-user",
+      "community": "auth-security"
+    },
+    {
+      "label": "Session",
+      "type": "entity",
+      "id": "ent-session",
+      "community": "auth-security"
+    },
+    {
+      "label": "Integration",
+      "type": "entity",
+      "id": "ent-integration",
+      "community": "data"
+    },
+    {
+      "label": "Credential",
+      "type": "entity",
+      "id": "ent-credential",
+      "community": "auth-security"
+    },
+    {
+      "label": "ProviderConnection",
+      "type": "entity",
+      "id": "ent-provider-connection",
+      "community": "data"
+    },
+    {
+      "label": "Account",
+      "type": "entity",
+      "id": "ent-account",
+      "community": "data"
+    },
+    {
+      "label": "Balance",
+      "type": "entity",
+      "id": "ent-balance",
+      "community": "data"
+    },
+    {
+      "label": "Transaction",
+      "type": "entity",
+      "id": "ent-transaction",
+      "community": "data"
+    },
+    {
+      "label": "Category",
+      "type": "entity",
+      "id": "ent-category",
+      "community": "data"
+    },
+    {
+      "label": "SyncCursor",
+      "type": "entity",
+      "id": "ent-sync-cursor",
+      "community": "data"
+    },
+    {
+      "label": "SyncJob",
+      "type": "entity",
+      "id": "ent-sync-job",
+      "community": "data"
+    },
+    {
+      "label": "SyncJobStage",
+      "type": "entity",
+      "id": "ent-sync-job-stage",
+      "community": "data"
+    },
+    {
+      "label": "EventLog",
+      "type": "entity",
+      "id": "ent-event-log",
+      "community": "data"
+    },
+    {
+      "label": "AuditLog",
+      "type": "entity",
+      "id": "ent-audit-log",
+      "community": "data"
+    },
+    {
+      "label": "queue: sync",
+      "type": "queue",
+      "id": "q-sync",
+      "community": "uncategorized"
+    },
+    {
+      "label": "queue: accounts",
+      "type": "queue",
+      "id": "q-accounts",
+      "community": "uncategorized"
+    },
+    {
+      "label": "queue: transactions",
+      "type": "queue",
+      "id": "q-transactions",
+      "community": "uncategorized"
+    },
+    {
+      "label": "queue: classify",
+      "type": "queue",
+      "id": "q-classify",
+      "community": "uncategorized"
+    },
+    {
+      "label": "queue: webhooks",
+      "type": "queue",
+      "id": "q-webhooks",
+      "community": "uncategorized"
+    },
+    {
+      "label": "queue: outbox",
+      "type": "queue",
+      "id": "q-outbox",
+      "community": "uncategorized"
+    },
+    {
+      "label": "queue: notifications",
+      "type": "queue",
+      "id": "q-notifications",
+      "community": "uncategorized"
+    },
+    {
+      "label": "queue: sync.dead (DLQ)",
+      "type": "queue",
+      "id": "q-sync-dead",
+      "community": "uncategorized"
+    },
+    {
+      "label": "Plaid",
+      "type": "provider",
+      "id": "prov-plaid",
+      "community": "providers"
+    },
+    {
+      "label": "MX (future)",
+      "type": "provider",
+      "id": "prov-mx",
+      "community": "providers"
+    },
+    {
+      "label": "Akoya (future)",
+      "type": "provider",
+      "id": "prov-akoya",
+      "community": "providers"
+    },
+    {
+      "label": "Varo Direct (future)",
+      "type": "provider",
+      "id": "prov-varo-direct",
+      "community": "providers"
+    },
+    {
+      "label": "M0: Foundation",
+      "type": "milestone",
+      "id": "M0",
+      "community": "planning"
+    },
+    {
+      "label": "M1: Identity & Auth",
+      "type": "milestone",
+      "id": "M1",
+      "community": "planning"
+    },
+    {
+      "label": "M2: Provider Abstraction + Plaid",
+      "type": "milestone",
+      "id": "M2",
+      "community": "planning"
+    },
+    {
+      "label": "M3: Sync Pipeline",
+      "type": "milestone",
+      "id": "M3",
+      "community": "planning"
+    },
+    {
+      "label": "M4: API & Read Models",
+      "type": "milestone",
+      "id": "M4",
+      "community": "planning"
+    },
+    {
+      "label": "M5: Dashboard Frontend",
+      "type": "milestone",
+      "id": "M5",
+      "community": "planning"
+    },
+    {
+      "label": "M6: Observability & Production",
+      "type": "milestone",
+      "id": "M6",
+      "community": "planning"
+    },
+    {
+      "label": "PostgreSQL",
+      "type": "technology",
+      "id": "tech-postgres",
+      "community": "data"
+    },
+    {
+      "label": "Redis",
+      "type": "technology",
+      "id": "tech-redis",
+      "community": "data"
+    },
+    {
+      "label": "BullMQ",
+      "type": "technology",
+      "id": "tech-bullmq",
+      "community": "data"
+    },
+    {
+      "label": "Drizzle ORM",
+      "type": "technology",
+      "id": "tech-drizzle",
+      "community": "data"
+    },
+    {
+      "label": "NestJS",
+      "type": "technology",
+      "id": "tech-nestjs",
+      "community": "uncategorized"
+    },
+    {
+      "label": "Next.js",
+      "type": "technology",
+      "id": "tech-nextjs",
+      "community": "uncategorized"
+    },
+    {
+      "label": "Auth.js",
+      "type": "technology",
+      "id": "tech-authjs",
+      "community": "auth-security"
+    },
+    {
+      "label": "TypeScript",
+      "type": "technology",
+      "id": "tech-typescript",
+      "community": "uncategorized"
+    },
+    {
+      "label": "Tailwind CSS v4",
+      "type": "technology",
+      "id": "tech-tailwind",
+      "community": "frontend"
+    },
+    {
+      "label": "shadcn/ui",
+      "type": "technology",
+      "id": "tech-shadcn",
+      "community": "frontend"
+    },
+    {
+      "label": "pnpm",
+      "type": "technology",
+      "id": "tech-pnpm",
+      "community": "infrastructure"
+    },
+    {
+      "label": "Turborepo",
+      "type": "technology",
+      "id": "tech-turborepo",
+      "community": "infrastructure"
+    },
+    {
+      "label": "Vercel",
+      "type": "technology",
+      "id": "tech-vercel",
+      "community": "infrastructure"
+    },
+    {
+      "label": "Fly.io",
+      "type": "technology",
+      "id": "tech-fly",
+      "community": "infrastructure"
+    },
+    {
+      "label": "Neon (Postgres)",
+      "type": "technology",
+      "id": "tech-neon",
+      "community": "infrastructure"
+    },
+    {
+      "label": "Upstash (Redis)",
+      "type": "technology",
+      "id": "tech-upstash",
+      "community": "infrastructure"
+    }
+  ],
+  "edges": [
+    {
+      "source": "adr-0000",
+      "target": "adr-0001",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0002",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0003",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0004",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0005",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0006",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0007",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0008",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0009",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0000",
+      "target": "adr-0010",
+      "relation": "inherits",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0001",
+      "target": "tech-nestjs",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0001",
+      "target": "tech-nextjs",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0001",
+      "target": "tech-typescript",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0001",
+      "target": "tech-pnpm",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0001",
+      "target": "tech-turborepo",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0002",
+      "target": "tech-postgres",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0002",
+      "target": "tech-drizzle",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0003",
+      "target": "tech-redis",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0003",
+      "target": "tech-bullmq",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "adr-0004",
+      "target": "tech-authjs",
+      "relation": "described_by",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-domain",
+      "target": "agent-backend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-contracts",
+      "target": "agent-api",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-provider-sdk",
+      "target": "agent-api",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-db",
+      "target": "agent-backend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-db",
+      "target": "tech-postgres",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-db",
+      "target": "tech-drizzle",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-auth",
+      "target": "agent-security",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-auth",
+      "target": "tech-authjs",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-queue",
+      "target": "agent-backend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-queue",
+      "target": "tech-redis",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-queue",
+      "target": "tech-bullmq",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-observability",
+      "target": "agent-devops",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-ui",
+      "target": "agent-frontend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-test-utils",
+      "target": "agent-testing",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-config",
+      "target": "agent-devops",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "pkg-tsconfig",
+      "target": "agent-devops",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "app-web",
+      "target": "agent-frontend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "app-api",
+      "target": "agent-backend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-sync-worker",
+      "target": "agent-backend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-sync-worker",
+      "target": "q-sync",
+      "relation": "consumes",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-sync-worker",
+      "target": "q-accounts",
+      "relation": "consumes",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-sync-worker",
+      "target": "q-transactions",
+      "relation": "consumes",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-sync-worker",
+      "target": "q-classify",
+      "relation": "consumes",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-sync-worker",
+      "target": "q-sync-dead",
+      "relation": "consumes",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-webhook-worker",
+      "target": "agent-backend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-webhook-worker",
+      "target": "q-webhooks",
+      "relation": "consumes",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-scheduler",
+      "target": "agent-backend",
+      "relation": "owns",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "svc-scheduler",
+      "target": "q-sync",
+      "relation": "consumes",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-identity",
+      "target": "ent-user",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-identity",
+      "target": "ent-session",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-identity",
+      "target": "ent-event-log",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-identity",
+      "target": "ent-audit-log",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-provider-link",
+      "target": "ent-integration",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-provider-link",
+      "target": "ent-credential",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-provider-link",
+      "target": "ent-provider-connection",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-account",
+      "target": "ent-account",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-account",
+      "target": "ent-balance",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-transaction",
+      "target": "ent-transaction",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-transaction",
+      "target": "ent-category",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-sync",
+      "target": "ent-sync-cursor",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-sync",
+      "target": "ent-sync-job",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "ctx-sync",
+      "target": "ent-sync-job-stage",
+      "relation": "belongs_to",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "M0",
+      "target": "M1",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "M1",
+      "target": "M2",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "M2",
+      "target": "M3",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "M3",
+      "target": "M4",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "M4",
+      "target": "M5",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    },
+    {
+      "source": "M5",
+      "target": "M6",
+      "relation": "depends_on",
+      "type": "EXTRACTED"
+    }
+  ],
+  "directed": false,
+  "metadata": {
+    "project": "byrdOS",
+    "generated": "2026-07-20",
+    "method": "manual architectural seeding",
+    "total_nodes": 95,
+    "total_edges": 68
+  }
+}
