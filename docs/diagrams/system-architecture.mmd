@@ -1,0 +1,39 @@
+%% System architecture flowchart for byrdOS showing client, edge, API, worker, data, and external layers.
+flowchart TB
+  subgraph Client
+    WEB[Next.js Web]
+  end
+  subgraph Edge
+    CDN[Vercel Edge/CDN]
+  end
+  subgraph API
+    NEST[NestJS REST API]
+  end
+  subgraph Workers
+    SYNC[Sync Workers]
+    WH[Webhook Worker]
+    SCH[Scheduler]
+    REL[Outbox Relay]
+  end
+  subgraph Data
+    PG[(Postgres)]
+    RD[(Redis)]
+    S3[(Object Store)]
+  end
+  subgraph External
+    PLAID[Plaid]
+    IDS[Google/Apple IdP]
+  end
+  WEB --> CDN --> NEST
+  WEB --> IDS
+  NEST --> PG
+  NEST --> RD
+  WH --> PLAID
+  PLAID -->|webhook| WH
+  SCH --> RD
+  SYNC --> RD
+  SYNC --> PLAID
+  SYNC --> PG
+  REL --> PG
+  REL --> RD
+  NEST --> RD

@@ -1,0 +1,29 @@
+%% OAuth / bank link flow sequence diagram for connecting a provider account via Plaid.
+sequenceDiagram
+  autonumber
+  participant U as User
+  participant W as Web
+  participant A as API
+  participant PA as PlaidAdapter
+  participant P as Plaid
+  participant D as DB
+  participant Q as Queue
+
+  U ->> W: Click Connect Bank
+  W ->> A: POST /links/initiate
+  A ->> PA: createLinkToken()
+  PA ->> P: link/token/create
+  P -->> PA: link_token
+  PA -->> A: link_token
+  A -->> W: link_token
+  W ->> U: Plaid Link SDK
+  U ->> W: public_token
+  W ->> A: POST /links/exchange
+  A ->> PA: exchangePublicToken()
+  PA ->> P: item/public_token/exchange
+  P -->> PA: access_token, item_id
+  PA ->> D: upsert Integration / Credential / Connection
+  PA ->> Q: enqueue InitialSync
+  PA -->> A: { connectionId, status: syncing }
+  A -->> W: { connectionId, status: syncing }
+  W -->> U: Show syncing status

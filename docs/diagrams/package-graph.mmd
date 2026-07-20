@@ -1,0 +1,46 @@
+%% Package dependency graph for the byrdOS monorepo showing directional dependencies between apps and shared packages.
+flowchart LR
+  subgraph Packages
+    contracts[contracts]
+    domain[domain]
+    auth[auth]
+    db[db]
+    queue[queue]
+    observability[observability]
+    provider-sdk[provider-sdk]
+    ui[ui]
+  end
+  subgraph Apps
+    api[api]
+    web[web]
+    sync-worker[sync-worker]
+    webhook-worker[webhook-worker]
+    scheduler[scheduler]
+    outbox-relay[outbox-relay]
+  end
+  domain --> contracts
+  provider-sdk --> domain
+  provider-sdk --> contracts
+  api --> auth
+  api --> db
+  api --> provider-sdk
+  api --> queue
+  api --> observability
+  api --> contracts
+  web --> ui
+  web --> contracts
+  web --> auth
+  sync-worker --> queue
+  sync-worker --> provider-sdk
+  sync-worker --> db
+  sync-worker --> observability
+  webhook-worker --> queue
+  webhook-worker --> provider-sdk
+  webhook-worker --> db
+  webhook-worker --> observability
+  scheduler --> queue
+  scheduler --> db
+  scheduler --> observability
+  outbox-relay --> db
+  outbox-relay --> queue
+  outbox-relay --> observability

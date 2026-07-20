@@ -1,0 +1,22 @@
+%% Event flow diagram illustrating transactional outbox plus in-process event emitter paths.
+flowchart LR
+  SW[Service/Worker]
+  DB[(DB + outbox table)]
+  EE[EventEmitter2]
+  PROJ[Projections]
+  NOT[Notifier]
+  REL[OutboxRelay]
+  RS[Redis Stream]
+  C1[insights]
+  C2[audit]
+  C3[push]
+
+  SW -->|write tx + outbox row| DB
+  SW -->|emit local event| EE
+  EE --> PROJ
+  EE --> NOT
+  REL -->|poll| DB
+  REL -->|publish| RS
+  RS --> C1
+  RS --> C2
+  RS --> C3
