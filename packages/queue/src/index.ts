@@ -1,0 +1,4 @@
+/**
+ * @byrdos/queue placeholder
+ */
+export {};

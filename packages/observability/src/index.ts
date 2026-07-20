@@ -1,0 +1,4 @@
+/**
+ * @byrdos/observability placeholder
+ */
+export {};

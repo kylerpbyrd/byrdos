@@ -1,0 +1,4 @@
+/**
+ * @byrdos/contracts placeholder
+ */
+export {};

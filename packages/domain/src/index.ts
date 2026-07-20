@@ -1,0 +1,4 @@
+/**
+ * @byrdos/domain placeholder
+ */
+export {};

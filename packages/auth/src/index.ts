@@ -1,0 +1,4 @@
+/**
+ * @byrdos/auth placeholder
+ */
+export {};
