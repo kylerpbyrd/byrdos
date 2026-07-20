@@ -1,0 +1,17 @@
+# External/agent tooling
+.agents/
+.opencode/
+.env
+
+# Docs and steering files managed separately
+docs/
+PROMPT.md
+AGENTS.md
+DESIGN.md
+
+# Build artifacts
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/

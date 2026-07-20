@@ -1,0 +1,4 @@
+/**
+ * @byrdos/db placeholder
+ */
+export {};
