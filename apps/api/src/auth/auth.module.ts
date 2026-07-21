@@ -6,6 +6,7 @@ import { SessionController } from './session.controller.js';
 import { AuthService } from './auth.service.js';
 import { JwtStrategy } from './jwt.strategy.js';
 import { JwtAuthGuard } from './jwt-auth.guard.js';
+import { DrizzleUserRepository, db } from '@byrdos/db';
 
 @Module({
   imports: [
@@ -16,7 +17,15 @@ import { JwtAuthGuard } from './jwt-auth.guard.js';
     }),
   ],
   controllers: [AuthController, SessionController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    {
+      provide: 'UserRepository',
+      useFactory: () => new DrizzleUserRepository(db),
+    },
+  ],
   exports: [JwtAuthGuard, AuthService],
 })
 export class AuthModule {}

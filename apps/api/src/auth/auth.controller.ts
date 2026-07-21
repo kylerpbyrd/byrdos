@@ -8,20 +8,12 @@ export class AuthController {
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async signup(@Body() body: { email: string; password: string; name?: string }) {
-    // Stub — will be wired in M1.5 when UserRepository is ready
-    return {
-      message: 'Signup endpoint ready',
-      user: { email: body.email, name: body.name || null },
-    };
+    return this.authService.signup(body.email, body.password, body.name);
   }
 
   @Post('signin')
   @HttpCode(HttpStatus.OK)
   async signin(@Body() body: { email: string; password: string }) {
-    // Stub — will be wired in M1.5
-    return {
-      message: `Signin endpoint ready for ${body.email}`,
-      accessToken: 'stub-token',
-    };
+    return this.authService.signin(body.email, body.password);
   }
 }
