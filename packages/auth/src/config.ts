@@ -5,6 +5,8 @@ import Google from 'next-auth/providers/google';
 export interface AuthConfigOptions {
   /** JWT secret for signing */
   jwtSecret: string;
+  /** Base URL of the NestJS API (e.g. http://localhost:4000/api) */
+  apiUrl?: string;
   /** Whether to enable Google OAuth */
   googleEnabled?: boolean;
   googleClientId?: string;
@@ -20,10 +22,34 @@ export function createAuthConfig(options: AuthConfigOptions): NextAuthConfig {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // Stub — real implementation in apps/api uses UserRepository
-        // For now, return null (auth fails) until M1.3 wires the real verify
-        void credentials;
-        return null;
+        const email = credentials?.email as string | undefined;
+        const password = credentials?.password as string | undefined;
+        if (!email || !password) return null;
+
+        const apiUrl = options.apiUrl || process.env.API_URL || 'http://localhost:4000/api';
+
+        try {
+          const res = await fetch(`${apiUrl}/auth/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (!res.ok) return null;
+
+          const data = (await res.json()) as {
+            user: { id: string; email: string; name: string | null };
+            accessToken: string;
+          };
+
+          return {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+          };
+        } catch {
+          return null;
+        }
       },
     }),
   ];

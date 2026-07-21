@@ -8,6 +8,7 @@ const authSecret = process.env.AUTH_SECRET || 'dev-secret-change-me';
 const nextAuth = NextAuth(
   createAuthConfig({
     jwtSecret: authSecret,
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api',
     googleEnabled: !!process.env.AUTH_GOOGLE_ID,
     googleClientId: process.env.AUTH_GOOGLE_ID,
     googleClientSecret: process.env.AUTH_GOOGLE_SECRET,
