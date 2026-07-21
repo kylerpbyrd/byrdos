@@ -29,6 +29,13 @@
       "when": 1784595070057,
       "tag": "0003_pretty_gauntlet",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784657933311,
+      "tag": "0004_sad_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

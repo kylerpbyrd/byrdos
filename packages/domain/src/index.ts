@@ -11,6 +11,14 @@ export type { ProviderConnection, ConnectionStatus } from './provider-connection
 export type { SyncCursor } from './sync-cursor.entity.js';
 export type { SyncJob, SyncJobStatus, SyncJobType, SyncJobTrigger } from './sync-job.entity.js';
 export type { Account, AccountStatus, AccountType } from './account.entity.js';
+export type { AccountRepository, CreateAccountInput } from './account.repository.js';
 export type { Balance } from './balance.entity.js';
+export type { BalanceRepository, CreateBalanceInput } from './balance.repository.js';
 export type { Transaction } from './transaction.entity.js';
+export type {
+  TransactionRepository,
+  UpsertTransactionInput,
+  TransactionPaginationOptions,
+} from './transaction.repository.js';
+export type { PaginationOptions, PaginatedResult } from './pagination.js';
 export type { Category, CategoryKind } from './category.entity.js';

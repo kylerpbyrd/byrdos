@@ -14,6 +14,7 @@
     "@auth/core": "^0.37.0",
     "@byrdos/auth": "workspace:*",
     "@byrdos/contracts": "workspace:*",
+    "@byrdos/domain": "workspace:*",
     "@byrdos/ui": "workspace:*",
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.25",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@byrdos/config": "workspace:*",
     "@byrdos/tsconfig": "workspace:*",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.17.0",
     "@types/react": "^19.0.0",

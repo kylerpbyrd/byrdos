@@ -1,0 +1,27 @@
+{
+  "name": "@byrdos/outbox-relay",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json && node dist/index.js",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@byrdos/db": "workspace:*",
+    "@byrdos/queue": "workspace:*",
+    "@byrdos/contracts": "workspace:*",
+    "bullmq": "^5.0.0",
+    "drizzle-orm": "^0.38.0",
+    "ioredis": "^5.4.0"
+  },
+  "devDependencies": {
+    "@byrdos/config": "workspace:*",
+    "@byrdos/tsconfig": "workspace:*",
+    "@types/node": "^20.17.0",
+    "typescript": "^5.7.0"
+  }
+}

@@ -11,3 +11,4 @@ export { categories } from './category.schema.js';
 export { syncCursors } from './sync-cursor.schema.js';
 export { syncJobs } from './sync-job.schema.js';
 export { syncJobStages } from './sync-job-stage.schema.js';
+export { eventLog } from './event-log.schema.js';

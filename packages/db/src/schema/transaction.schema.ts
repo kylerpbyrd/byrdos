@@ -7,6 +7,7 @@ import {
   timestamp,
   uniqueIndex,
   varchar,
+  index,
 } from 'drizzle-orm/pg-core';
 import { accounts } from './account.schema.js';
 
@@ -33,5 +34,6 @@ export const transactions = pgTable(
   },
   (table) => [
     uniqueIndex('transactions_account_external_id_idx').on(table.accountId, table.externalId),
+    index('transactions_account_id_date_id_idx').on(table.accountId, table.date, table.id),
   ],
 );

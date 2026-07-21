@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { usePlaidLink, type PlaidLinkOnSuccessMetadata } from 'react-plaid-link';
 import { initiateLink, exchangeLinkToken } from '@/lib/api';
 
@@ -10,6 +11,8 @@ interface PlaidLinkButtonProps {
 }
 
 export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
+  const { data: session } = useSession();
+  const token = session?.accessToken;
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +27,11 @@ export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
           throw new Error('No pending integration found');
         }
 
-        await exchangeLinkToken(storedIntegrationId, publicToken, metadata);
+        if (!token) {
+          throw new Error('Not authenticated');
+        }
+
+        await exchangeLinkToken(storedIntegrationId, publicToken, metadata, token);
         sessionStorage.removeItem('pendingIntegrationId');
         setLinkToken(null);
         onSuccess?.();
@@ -32,7 +39,7 @@ export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
         setError(err instanceof Error ? err.message : 'Failed to link account');
       }
     },
-    [onSuccess],
+    [onSuccess, token],
   );
 
   const onPlaidExit = useCallback(() => {
@@ -48,10 +55,15 @@ export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
   });
 
   const handleConnect = async () => {
+    if (!token) {
+      setError('Not authenticated');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const result = await initiateLink('plaid');
+      const result = await initiateLink('plaid', token);
       sessionStorage.setItem('pendingIntegrationId', result.integrationId);
       setLinkToken(result.linkToken);
       // Plaid Link will open automatically when token is set
