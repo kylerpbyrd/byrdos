@@ -6,4 +6,7 @@ export {
   DrizzleIntegrationRepository,
   DrizzleCredentialRepository,
   DrizzleProviderConnectionRepository,
+  DrizzleAccountRepository,
+  DrizzleTransactionRepository,
+  DrizzleBalanceRepository,
 } from './repositories/index.js';

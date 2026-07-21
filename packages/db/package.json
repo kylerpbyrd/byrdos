@@ -6,14 +6,24 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No tests yet\"",
+    "test": "vitest run --passWithNoTests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "default": "./dist/schema/index.js"
+    }
   },
   "dependencies": {
     "@byrdos/domain": "workspace:*",
@@ -28,6 +38,7 @@
     "@types/pg": "^8.11.0",
     "@types/uuid": "^10.0.0",
     "drizzle-kit": "^0.30.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
   }
 }

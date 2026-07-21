@@ -2,7 +2,7 @@
   "extends": "@byrdos/tsconfig/nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "vitest.config.ts"]
 }

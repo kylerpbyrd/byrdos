@@ -46,6 +46,7 @@ export function createAuthConfig(options: AuthConfigOptions): NextAuthConfig {
             id: data.user.id,
             email: data.user.email,
             name: data.user.name,
+            accessToken: data.accessToken,
           };
         } catch {
           return null;
@@ -78,6 +79,7 @@ export function createAuthConfig(options: AuthConfigOptions): NextAuthConfig {
         if (user) {
           token.sub = user.id as string;
           token.email = user.email as string;
+          token.accessToken = user.accessToken as string;
         }
         return token;
       },
@@ -85,6 +87,7 @@ export function createAuthConfig(options: AuthConfigOptions): NextAuthConfig {
         if (session.user) {
           session.user.id = token.sub as string;
         }
+        session.accessToken = token.accessToken as string;
         return session;
       },
     },

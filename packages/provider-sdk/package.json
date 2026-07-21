@@ -6,11 +6,11 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No tests yet\""
+    "test": "vitest run"
   },
   "dependencies": {
     "@byrdos/contracts": "workspace:*",
@@ -19,8 +19,10 @@
   },
   "devDependencies": {
     "@byrdos/config": "workspace:*",
+    "@byrdos/test-utils": "workspace:*",
     "@byrdos/tsconfig": "workspace:*",
     "@types/node": "^20.17.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
   }
 }

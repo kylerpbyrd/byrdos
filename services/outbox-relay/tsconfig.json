@@ -1,0 +1,8 @@
+{
+  "extends": "@byrdos/tsconfig/node-next.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"]
+}

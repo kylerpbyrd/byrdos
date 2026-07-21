@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { assertProviderId, type Integration, type ProviderConnection } from '@byrdos/domain';
 import { ProviderRegistry } from '@byrdos/provider-sdk';
 import { CredentialService } from '@byrdos/auth';
+import type { ProviderConnection as ContractProviderConnection } from '@byrdos/contracts';
 import type {
   DrizzleIntegrationRepository,
   DrizzleCredentialRepository,
@@ -73,8 +74,15 @@ export class IntegrationService {
     return conn;
   }
 
-  async revokeConnection(connectionId: string): Promise<void> {
+  async revokeConnection(connectionId: string, userId: string): Promise<void> {
     const conn = await this.getConnection(connectionId);
+    const integration = await this.integrationRepo.findById(conn.integrationId);
+    if (!integration) {
+      throw new NotFoundException('Integration not found');
+    }
+    if (integration.userId !== userId) {
+      throw new ForbiddenException('Forbidden');
+    }
     const adapter = this.registry.get('plaid');
 
     // Inject decrypted token for revoke
@@ -84,7 +92,7 @@ export class IntegrationService {
       (conn as { __accessToken?: string }).__accessToken = token;
     }
 
-    await adapter.revoke(conn as any);
+    await adapter.revoke(conn as unknown as ContractProviderConnection);
     await this.connectionRepo.updateStatus(connectionId, 'error');
     await this.integrationRepo.updateStatus(conn.integrationId, 'revoked');
 

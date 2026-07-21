@@ -1,10 +1,14 @@
-import { Controller, Post, Req, Headers, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Req, Body, Headers, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/public.decorator.js';
 import { Queue } from 'bullmq';
 import { Redis } from 'ioredis';
 import { QUEUES, type WebhookJobData } from '@byrdos/queue';
 import type { Request } from 'express';
+import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
+import { plaidWebhookBodySchema } from '../common/request-schemas.js';
 
+@ApiTags('webhooks')
 @Controller('webhooks')
 @Public() // Webhooks are authenticated by signature, not JWT
 export class WebhooksController {
@@ -18,16 +22,24 @@ export class WebhooksController {
 
   @Post('plaid')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Receive Plaid webhook events' })
+  @ApiBody({ description: 'Plaid webhook payload', type: Object })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhook acknowledged',
+    schema: { properties: { acknowledged: { type: 'boolean' } } },
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async plaidWebhook(
     @Req() req: Request,
     @Headers('plaid-verification') signature: string,
+    @Body(new ZodValidationPipe(plaidWebhookBodySchema)) payload: Record<string, unknown>,
   ) {
-    const payload = req.body;
-
     await this.webhookQueue.add(`plaid-${payload.webhook_code || 'unknown'}`, {
       providerId: 'plaid',
-      webhookType: payload.webhook_type || 'UNKNOWN',
-      webhookCode: payload.webhook_code || 'UNKNOWN',
+      webhookType: (payload.webhook_type as string) || 'UNKNOWN',
+      webhookCode: (payload.webhook_code as string) || 'UNKNOWN',
       payload,
       signature: signature || '',
       receivedAt: new Date().toISOString(),

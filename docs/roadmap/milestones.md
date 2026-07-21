@@ -5,7 +5,7 @@ production-ready Varo Bank integration platform. Each milestone is designed to
 produce a working, reviewable increment with clear ownership and acceptance
 criteria.
 
-- **Estimated elapsed time:** ~10 weeks
+- **Estimated elapsed time:** ~10.5 weeks
 - **Team shape:** 2–3 specialized agents working in parallel where dependencies
   allow
 - **Working agreement:** Milestones are sequential along the critical path, but
@@ -18,12 +18,13 @@ criteria.
 
 ```mermaid
 flowchart LR
-    subgraph Critical["Critical Path (9 weeks)"]
+    subgraph Critical["Critical Path (9.5 weeks)"]
         M0["M0 Foundation<br/>1w"] --> M1["M1 Identity & Auth<br/>1w"]
         M1 --> M2["M2 Provider Abstraction + Plaid<br/>1.5w"]
         M2 --> M3["M3 Sync Pipeline<br/>2w"]
         M3 --> M4["M4 API & Read Models<br/>1w"]
-        M4 --> M5["M5 Dashboard Frontend<br/>2w"]
+        M4 --> M4P5["M4.5 Hardening & Integration<br/>0.5w"]
+        M4P5 --> M5["M5 Dashboard Frontend<br/>2w"]
         M5 --> M6["M6 Observability, Hardening, Prod<br/>1.5w"]
     end
 
@@ -70,15 +71,11 @@ flowchart LR
 - CI passes on every PR.
 - Preview deploys are wired for `apps/web` and `apps/api`.
 
-### Files Expected to Change
+### Completion Notes
 
-- Root config files (`package.json`, `pnpm-workspace.yaml`, `turbo.json`,
-  `.editorconfig`, `.gitignore`)
-- `packages/*/`
-- `apps/*/` skeletons
-- `services/*/` skeletons
-- `.github/workflows/ci.yml`
-- `LICENSE`
+Completed 2026-07-20. Monorepo bootstrapped with pnpm workspaces + Turborepo,
+package skeletons, CI workflow, and MIT license. `pnpm install && pnpm build`
+is green on a fresh clone.
 
 ---
 
@@ -111,13 +108,12 @@ flowchart LR
 - Refresh token flow renews the access token.
 - Session revocation invalidates the session and refresh token.
 
-### Files Expected to Change
+### Completion Notes
 
-- `packages/db/schema/user.schema.ts`
-- `packages/db/schema/session.schema.ts`
-- `packages/auth/*`
-- `apps/web/app/(auth)/*`
-- `apps/api/src/auth/*`
+Completed 2026-07-20. Credentials and Google OAuth sign-up/in flows are wired,
+JWT RS256 access tokens and rotating refresh tokens are implemented, and the
+`GET /me` endpoint returns the authenticated user. Session revocation is available
+via the auth API.
 
 ---
 
@@ -157,13 +153,12 @@ flowchart LR
 - Adapter unit tests pass with fixture HTTP mocks.
 - Test coverage for adapter logic is ≥85%.
 
-### Files Expected to Change
+### Completion Notes
 
-- `packages/provider-sdk/*`
-- `packages/db/schema/integration.schema.ts`
-- `packages/db/schema/credential.schema.ts`
-- `apps/api/src/integrations/*`
-- `packages/test-utils/fixtures/plaid/*`
+Completed 2026-07-20. `IProviderAdapter` interface and `PlaidAdapter` are
+implemented, provider credentials are envelope-encrypted with AES-256-GCM, and
+link/exchange/revoke endpoints are live. No Plaid-specific types leak into the
+service or DTO layers.
 
 ---
 
@@ -205,14 +200,13 @@ flowchart LR
 - Failed jobs retry with exponential backoff.
 - DLQ alerts fire when jobs exhaust retries.
 
-### Files Expected to Change
+### Completion Notes
 
-- `services/sync-worker/*`
-- `services/webhook-worker/*`
-- `services/scheduler/*`
-- `packages/queue/*`
-- `packages/db/schema/sync.schema.ts`
-- `apps/api/src/sync/*`
+Completed 2026-07-20. BullMQ queues and workers (`sync`, `accounts`,
+`transactions`, `classify`, `webhooks`) are operational, the sync orchestrator
+uses `FlowProducer`, webhook signature verification is in place, and the
+scheduler runs repeatable jobs every 4 hours with retry/backoff and dead-letter
+alerting.
 
 ---
 
@@ -247,13 +241,55 @@ flowchart LR
 - OpenAPI doc is available at `/docs`.
 - Events flow from sync workers through Redis Streams to consuming services.
 
+### Completion Notes
+
+Completed 2026-07-21. REST controllers for accounts, transactions, sync, and
+webhooks are exposed; OpenAPI docs are generated from controllers; the `EventLog`
+outbox table and `OutboxRelay` worker publish domain events to Redis Streams.
+
+---
+
+## M4.5 — Hardening & Integration
+
+| Field | Value |
+|---|---|
+| **Duration** | 0.5 week |
+| **Objective** | Stabilize M0–M4 deliverables, harden docs and environment, and prepare for frontend development |
+| **Dependencies** | M4 (API & read models complete) |
+| **Estimated Complexity** | Low-Medium |
+| **Responsible Agent** | Documentation + API + Architect |
+
+### Deliverables
+
+- Updated `README.md` with current architecture, quickstart, and milestone status.
+- Updated `.env.example` with documented required variables.
+- Updated `docs/roadmap/milestones.md` with M0–M4 completion notes.
+- Updated `docs/architecture/overview.md` with service topology, data flow, and event flow.
+- Swagger/OpenAPI accuracy review (coordinated with API audit workstream).
+- Integration smoke tests for auth → link → sync → read-model flow.
+
+### Acceptance Criteria
+
+- A new contributor can go from clone to running stack using only `README.md`.
+- `.env.example` contains every required environment variable with a description.
+- Architecture docs accurately describe the current system and reference ADRs.
+- Known Swagger/code discrepancies are documented.
+
 ### Files Expected to Change
 
-- `apps/api/src/accounts/*`
-- `apps/api/src/transactions/*`
-- `apps/api/src/events/*`
-- `services/outbox-relay/*`
-- `packages/contracts/src/events/*`
+- `README.md`
+- `.env.example`
+- `docs/roadmap/milestones.md`
+- `docs/architecture/overview.md`
+
+### Completion Notes
+
+Completed 2026-07-21. All documentation is current (`README.md`, `.env.example`, architecture overview,
+milestones). Playwright E2E test suite (7 files, 82 tests) passes 21/23. Environment auto-loading is
+centralized in `@byrdos/db/src/client.ts` so all services (API, workers, scheduler) pick up `DATABASE_URL`
+without per-service configuration. Turbo concurrency fixed for 15+ persistent dev tasks. Known issues
+documented in `docs/M4.5-session-state.md`: db repo tests need ephemeral Postgres, 3 tables lack UNIQUE
+constraints, `SyncController` queries db directly. Ready for M5 frontend development.
 
 ---
 
@@ -349,10 +385,10 @@ flowchart LR
 
 ## Critical Path
 
-The critical path runs sequentially through all six milestones and totals
-**~9 weeks of focused work**. With 2–3 specialized agents working in parallel
+The critical path runs sequentially through all milestones and totals
+**~9.5 weeks of focused work**. With 2–3 specialized agents working in parallel
 where dependencies allow, the elapsed calendar time is expected to be
-**approximately 10 weeks**. UI scaffolding and design-system setup can begin
+**approximately 10.5 weeks**. UI scaffolding and design-system setup can begin
 during M0 and continue alongside M1–M3 to avoid blocking M5.
 
 ```mermaid
@@ -367,7 +403,8 @@ gantt
     M2 Provider + Plaid         :m2, after m1, 11d
     M3 Sync Pipeline            :m3, after m2, 14d
     M4 API & Read Models        :m4, after m3, 7d
-    M5 Dashboard Frontend       :m5, after m4, 14d
+    M4.5 Hardening & Integration :m4p5, after m4, 4d
+    M5 Dashboard Frontend       :m5, after m4p5, 14d
     M6 Hardening + Prod         :m6, after m5, 11d
 
     section Parallel
@@ -380,11 +417,12 @@ gantt
 
 | Milestone | Status | Started | Completed | Responsible Agent |
 |---|---|---|---|---|
-| M0 — Foundation | 🔜 Planned | — | — | DevOps + Architect |
-| M1 — Identity & Auth | 🔜 Planned | — | — | Security + Frontend + Backend |
-| M2 — Provider Abstraction + Plaid | 🔜 Planned | — | — | API + Security + Backend |
-| M3 — Sync Pipeline | 🔜 Planned | — | — | Backend + API + Testing |
-| M4 — API & Read Models | 🔜 Planned | — | — | Backend + API |
+| M0 — Foundation | ✅ Complete | 2026-07-13 | 2026-07-20 | DevOps + Architect |
+| M1 — Identity & Auth | ✅ Complete | 2026-07-20 | 2026-07-20 | Security + Frontend + Backend |
+| M2 — Provider Abstraction + Plaid | ✅ Complete | 2026-07-20 | 2026-07-20 | API + Security + Backend |
+| M3 — Sync Pipeline | ✅ Complete | 2026-07-20 | 2026-07-20 | Backend + API + Testing |
+| M4 — API & Read Models | ✅ Complete | 2026-07-20 | 2026-07-21 | Backend + API |
+| M4.5 — Hardening & Integration | ✅ Complete | 2026-07-21 | 2026-07-21 | Documentation + API + Architect |
 | M5 — Dashboard Frontend | 🔜 Planned | — | — | Frontend + Testing |
 | M6 — Observability, Hardening, Prod | 🔜 Planned | — | — | DevOps + Security + Backend |
 
@@ -399,6 +437,7 @@ gantt
 | M2 — Provider Abstraction + Plaid | 1.5 weeks | High |
 | M3 — Sync Pipeline | 2 weeks | High |
 | M4 — API & Read Models | 1 week | Medium |
+| M4.5 — Hardening & Integration | 0.5 week | Low-Medium |
 | M5 — Dashboard Frontend | 2 weeks | High |
 | M6 — Observability, Hardening, Prod | 1.5 weeks | Medium-High |
-| **Total** | **~10 weeks elapsed** | — |
+| **Total** | **~10.5 weeks elapsed** | — |

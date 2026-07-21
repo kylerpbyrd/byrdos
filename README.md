@@ -2,7 +2,7 @@
 
 AI-first personal financial operating system. Understand, automate, and optimize every aspect of your financial life.
 
-> **Status:** Pre-release (M0–M3 complete, M4–M6 in progress)  
+> **Status:** Pre-release (M0–M4 complete, **M4.5 Hardening & Integration in progress**, M5–M6 planned)  
 > **License:** MIT
 
 ---
@@ -33,23 +33,24 @@ packages/
 
 ### Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Language | TypeScript (strict) |
-| Monorepo | pnpm workspaces + Turborepo |
-| Frontend | Next.js 15, React 19, Tailwind v4, shadcn/ui |
-| Backend | NestJS, Passport JWT |
-| Database | PostgreSQL + Drizzle ORM |
-| Cache/Queue | Redis + BullMQ |
-| Auth | Auth.js v5 (Credentials + Google) |
-| Provider | Plaid (sandbox), MX/Akoya (future) |
-| Observability | pino, OpenTelemetry |
+| Layer         | Technology                                   |
+| ------------- | -------------------------------------------- |
+| Language      | TypeScript (strict)                          |
+| Monorepo      | pnpm workspaces + Turborepo                  |
+| Frontend      | Next.js 15, React 19, Tailwind v4, shadcn/ui |
+| Backend       | NestJS, Passport JWT                         |
+| Database      | PostgreSQL + Drizzle ORM                     |
+| Cache/Queue   | Redis + BullMQ                               |
+| Auth          | Auth.js v5 (Credentials + Google)            |
+| Provider      | Plaid (sandbox), MX/Akoya (future)           |
+| Observability | pino, OpenTelemetry                          |
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
+
 - **Node.js** >= 20
 - **pnpm** >= 9
 - **Docker Desktop** (for Postgres + Redis)
@@ -61,36 +62,64 @@ packages/
 git clone https://github.com/kylerpbyrd/byrdos.git
 cd byrdos
 
-# Install
-pnpm install
+# Copy and fill in environment variables
+cp .env.example .env
+# Generate required secrets and paste them into .env:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # CREDENTIAL_ENCRYPTION_KEY
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # AUTH_SECRET
 
 # Start infrastructure
 docker compose up -d
 
+# Install dependencies
+pnpm install
+
 # Apply database migrations
-cp .env.example .env
 pnpm db:migrate
 
-# Start API (terminal 1)
-pnpm --filter @byrdos/api dev
-
-# Start frontend (terminal 2)
-pnpm --filter @byrdos/web dev
+# Start everything (frontend + backend + workers)
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### API Documentation
+
+Once the API is running, OpenAPI docs are available at [http://localhost:4000/docs](http://localhost:4000/docs).
+
+### Verify Local Setup
+
+After `pnpm dev` is running:
+
+1. **Containers are healthy**
+
+   ```bash
+   docker ps
+   ```
+
+   Both `postgres` and `redis` should show `(healthy)`.
+
+2. **Dashboard loads**
+   [http://localhost:3000](http://localhost:3000)
+
+3. **API docs load**
+   [http://localhost:4000/docs](http://localhost:4000/docs)
+
 ### Environment
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` to `.env` and configure all required variables. See `.env.example` for inline descriptions.
 
 ```env
-AUTH_SECRET=<random-32-char-string>
+AUTH_SECRET=<random-32-byte-hex-string>
+CREDENTIAL_ENCRYPTION_KEY=<32-byte-hex-key>
+WEB_URL=http://localhost:3000
+PORT=4000
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/byrdos_dev
 REDIS_URL=redis://localhost:6379
 PLAID_CLIENT_ID=<your-plaid-sandbox-id>
 PLAID_SECRET=<your-plaid-sandbox-secret>
 PLAID_ENV=sandbox
+PLAID_WEBHOOK_KEY=<your-webhook-verification-key>
 ```
 
 ---
@@ -132,15 +161,18 @@ byrdos/
 
 ## Milestones
 
-| # | Milestone | Status |
-|---|---|---|
-| M0 | Foundation — monorepo, CI, package skeletons | ✅ |
-| M1 | Identity & Auth — signup, signin, JWT, protected routes | ✅ |
-| M2 | Provider Abstraction — Plaid adapter, credential encryption | ✅ |
-| M3 | Sync Pipeline — orchestrator, workers, webhooks, scheduler | ✅ |
-| M4 | API & Read Models — endpoints, cache, events, OpenAPI | 🔜 |
-| M5 | Dashboard Frontend — accounts, transactions, Plaid Link | 🔜 |
-| M6 | Observability — metrics, tracing, rate limiting, prod deploy | 🔜 |
+| #    | Milestone                                                     | Status |
+| ---- | ------------------------------------------------------------- | ------ |
+| M0   | Foundation — monorepo, CI, package skeletons                  | ✅     |
+| M1   | Identity & Auth — signup, signin, JWT, protected routes       | ✅     |
+| M2   | Provider Abstraction — Plaid adapter, credential encryption   | ✅     |
+| M3   | Sync Pipeline — orchestrator, workers, webhooks, scheduler    | ✅     |
+| M4   | API & Read Models — endpoints, cache, events, OpenAPI         | ✅     |
+| M4.5 | Hardening & Integration — API audit, README/env refresh, docs | 🚧     |
+| M5   | Dashboard Frontend — accounts, transactions, Plaid Link       | 🔜     |
+| M6   | Observability — metrics, tracing, rate limiting, prod deploy  | 🔜     |
+
+See the full roadmap at [`docs/roadmap/milestones.md`](docs/roadmap/milestones.md).
 
 ---
 
@@ -180,7 +212,17 @@ pnpm format:check     # Check formatting
 
 ---
 
+## Documentation
+
+- **Architecture decisions**: [`docs/adr/`](docs/adr/)
+- **Architecture deep-dives**: [`docs/architecture/`](docs/architecture/)
+- **Roadmap**: [`docs/roadmap/milestones.md`](docs/roadmap/milestones.md)
+- **OpenAPI spec**: served live at `/docs` when `apps/api` is running
+
+## License
+
+byrdOS is released under the [MIT License](LICENSE).
+
 ## Contributing
 
-byrdOS is built by specialized AI agents coordinated by the Architect. See [`AGENTS.md`](AGENTS.md) for agent responsibilities and workflows. See [`docs/adr/`](docs/adr/) for architectural decisions.
-
+byrdOS is built by specialized AI agents coordinated by the Architect. See [`AGENTS.md`](AGENTS.md) for agent responsibilities and workflows.
