@@ -4,26 +4,30 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
+    "@auth/core": "^0.37.0",
     "@byrdos/auth": "workspace:*",
     "@byrdos/contracts": "workspace:*",
     "@byrdos/ui": "workspace:*",
     "next": "^15.1.0",
+    "next-auth": "^5.0.0-beta.25",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@byrdos/config": "workspace:*",
     "@byrdos/tsconfig": "workspace:*",
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.17.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0"
   }
 }

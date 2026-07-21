@@ -1,4 +1,3 @@
-/**
- * @byrdos/db placeholder
- */
-export {};
+export { db, type DbClient } from './client';
+export * from './schema';
+export { getDatabaseUrl } from './env';

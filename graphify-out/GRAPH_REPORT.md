@@ -13,29 +13,29 @@
 
 ## Communities
 
-| # | Community | Nodes | Description |
-|---|---|---|---|
-| 1 | docs | 12 | ADRs 0000-0010 + Documentation agent |
-| 2 | infrastructure | 10 | Config, tsconfig, observability, deployment tech |
-| 3 | domain | 10 | Domain package, contracts, 8 bounded contexts |
-| 4 | backend | 7 | NestJS API, db, queue, sync/webhook/scheduler workers |
-| 5 | frontend | 5 | Next.js web app, UI package, Tailwind, shadcn |
-| 6 | auth-security | 6 | Auth package, User/Session/Credential entities, Auth.js |
-| 7 | providers | 6 | Provider SDK, Plaid/MX/Akoya/Varo adapters |
-| 8 | data | 15 | All 14 entities + Postgres/Drizzle/Redis/BullMQ tech |
-| 9 | testing | 2 | Test-utils package + Testing agent |
-| 10 | planning | 8 | 7 milestones (M0-M6) + Architect agent |
+| #   | Community      | Nodes | Description                                             |
+| --- | -------------- | ----- | ------------------------------------------------------- |
+| 1   | docs           | 12    | ADRs 0000-0010 + Documentation agent                    |
+| 2   | infrastructure | 10    | Config, tsconfig, observability, deployment tech        |
+| 3   | domain         | 10    | Domain package, contracts, 8 bounded contexts           |
+| 4   | backend        | 7     | NestJS API, db, queue, sync/webhook/scheduler workers   |
+| 5   | frontend       | 5     | Next.js web app, UI package, Tailwind, shadcn           |
+| 6   | auth-security  | 6     | Auth package, User/Session/Credential entities, Auth.js |
+| 7   | providers      | 6     | Provider SDK, Plaid/MX/Akoya/Varo adapters              |
+| 8   | data           | 15    | All 14 entities + Postgres/Drizzle/Redis/BullMQ tech    |
+| 9   | testing        | 2     | Test-utils package + Testing agent                      |
+| 10  | planning       | 8     | 7 milestones (M0-M6) + Architect agent                  |
 
 ## God Nodes (highest centrality)
 
-| Node | Type | Connections | Why |
-|---|---|---|---|
-| ADR-0000 | ADR | 10 | All other ADRs inherit from it |
-| agent-backend | Agent | 7 | Owns most packages + all services |
-| agent-architect | Agent | 7 | Owns all milestones + coordinates |
-| pkg-domain | Package | 6 | Core dependency for most packages |
-| ctx-sync | Bounded Context | 6 | Orchestrates accounts + transactions + events |
-| ADR-0001 | ADR | 5 | Describes monorepo stack decisions |
+| Node            | Type            | Connections | Why                                           |
+| --------------- | --------------- | ----------- | --------------------------------------------- |
+| ADR-0000        | ADR             | 10          | All other ADRs inherit from it                |
+| agent-backend   | Agent           | 7           | Owns most packages + all services             |
+| agent-architect | Agent           | 7           | Owns all milestones + coordinates             |
+| pkg-domain      | Package         | 6           | Core dependency for most packages             |
+| ctx-sync        | Bounded Context | 6           | Orchestrates accounts + transactions + events |
+| ADR-0001        | ADR             | 5           | Describes monorepo stack decisions            |
 
 ## Surprising Connections
 
@@ -58,12 +58,12 @@
 
 ## Token Cost
 
-| Component | Input Tokens | Output Tokens |
-|---|---|---|
-| Detection | 0 | 0 |
-| AST Extraction | 0 | 0 (Windows issue) |
-| Semantic Extraction | 0 | 0 (manual seeding) |
-| **Total this run** | **0** | **0** |
+| Component           | Input Tokens | Output Tokens      |
+| ------------------- | ------------ | ------------------ |
+| Detection           | 0            | 0                  |
+| AST Extraction      | 0            | 0 (Windows issue)  |
+| Semantic Extraction | 0            | 0 (manual seeding) |
+| **Total this run**  | **0**        | **0**              |
 
 > Note: Graph built via programmatic seeding rather than full Graphify pipeline due to Windows multiprocessing constraints. Full pipeline will be run on a Linux CI runner in M1+.
 

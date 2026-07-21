@@ -13,12 +13,17 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
+    "@auth/core": "^0.37.0",
     "@byrdos/db": "workspace:*",
-    "@byrdos/domain": "workspace:*"
+    "@byrdos/domain": "workspace:*",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.0",
+    "next-auth": "^5.0.0-beta.25"
   },
   "devDependencies": {
     "@byrdos/config": "workspace:*",
     "@byrdos/tsconfig": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.17.0",
     "typescript": "^5.7.0"
   }
