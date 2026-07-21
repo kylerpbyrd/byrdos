@@ -1,4 +1,9 @@
-export { db, type DbClient } from './client';
-export * from './schema';
-export { getDatabaseUrl } from './env';
-export { DrizzleUserRepository } from './repositories';
+export { db, type DbClient } from './client.js';
+export * from './schema/index.js';
+export { getDatabaseUrl } from './env.js';
+export {
+  DrizzleUserRepository,
+  DrizzleIntegrationRepository,
+  DrizzleCredentialRepository,
+  DrizzleProviderConnectionRepository,
+} from './repositories/index.js';
