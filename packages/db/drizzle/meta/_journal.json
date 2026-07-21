@@ -15,6 +15,13 @@
       "when": 1784592292133,
       "tag": "0001_salty_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784593006597,
+      "tag": "0002_lyrical_junta",
+      "breakpoints": true
     }
   ]
 }

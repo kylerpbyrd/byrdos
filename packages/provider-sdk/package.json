@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@byrdos/contracts": "workspace:*",
-    "@byrdos/domain": "workspace:*"
+    "@byrdos/domain": "workspace:*",
+    "plaid": "^30.0.0"
   },
   "devDependencies": {
     "@byrdos/config": "workspace:*",
