@@ -5,6 +5,12 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
@@ -13,7 +19,8 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
-    "@byrdos/contracts": "workspace:*"
+    "@byrdos/contracts": "workspace:*",
+    "bullmq": "^5.0.0"
   },
   "devDependencies": {
     "@byrdos/config": "workspace:*",
