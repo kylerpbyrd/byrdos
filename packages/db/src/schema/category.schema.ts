@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core';
-import { users } from './user.schema';
+import { users } from './user.schema.js';
 
 export const categories = pgTable('categories', {
   id: text('id').primaryKey(), // UUID v7

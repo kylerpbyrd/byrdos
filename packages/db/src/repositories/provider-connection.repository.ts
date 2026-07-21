@@ -60,6 +60,7 @@ function mapConnectionRow(row: typeof providerConnections.$inferSelect): Provide
     id: row.id,
     integrationId: row.integrationId,
     externalId: row.externalId,
+    providerId: '', // Resolved via join with integrations table
     institutionName: row.institutionName,
     status: row.status as ConnectionStatus,
     lastWebhookAt: row.lastWebhookAt,

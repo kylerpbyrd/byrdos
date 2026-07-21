@@ -1,4 +1,4 @@
-import type { ProviderId } from './provider-id.vo';
+import type { ProviderId } from './provider-id.vo.js';
 
 export type IntegrationStatus = 'active' | 'error' | 'revoked';
 

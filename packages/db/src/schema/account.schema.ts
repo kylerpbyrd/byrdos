@@ -1,5 +1,5 @@
 import { pgTable, integer, text, timestamp, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
-import { providerConnections } from './provider-connection.schema';
+import { providerConnections } from './provider-connection.schema.js';
 
 export const accounts = pgTable(
   'accounts',

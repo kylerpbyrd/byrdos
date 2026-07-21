@@ -1,1 +1,1 @@
-export { PlaidAdapter, type PlaidAdapterConfig } from './plaid.adapter';
+export { PlaidAdapter, type PlaidAdapterConfig } from './plaid.adapter.js';

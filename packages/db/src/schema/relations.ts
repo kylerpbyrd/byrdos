@@ -1,16 +1,16 @@
 import { relations } from 'drizzle-orm';
-import { users } from './user.schema';
-import { sessions } from './session.schema';
-import { integrations } from './integration.schema';
-import { credentials } from './credential.schema';
-import { providerConnections } from './provider-connection.schema';
-import { accounts } from './account.schema';
-import { balances } from './balance.schema';
-import { transactions } from './transaction.schema';
-import { categories } from './category.schema';
-import { syncCursors } from './sync-cursor.schema';
-import { syncJobs } from './sync-job.schema';
-import { syncJobStages } from './sync-job-stage.schema';
+import { users } from './user.schema.js';
+import { sessions } from './session.schema.js';
+import { integrations } from './integration.schema.js';
+import { credentials } from './credential.schema.js';
+import { providerConnections } from './provider-connection.schema.js';
+import { accounts } from './account.schema.js';
+import { balances } from './balance.schema.js';
+import { transactions } from './transaction.schema.js';
+import { categories } from './category.schema.js';
+import { syncCursors } from './sync-cursor.schema.js';
+import { syncJobs } from './sync-job.schema.js';
+import { syncJobStages } from './sync-job-stage.schema.js';
 
 export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),

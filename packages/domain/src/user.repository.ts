@@ -1,4 +1,4 @@
-import type { User, UserStatus } from './user.entity';
+import type { User, UserStatus } from './user.entity.js';
 
 export interface CreateUserInput {
   email: string;

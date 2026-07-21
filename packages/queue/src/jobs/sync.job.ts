@@ -1,4 +1,4 @@
-import type { QueueName } from '../queue-names';
+import type { QueueName } from '../queue-names.js';
 
 export type SyncTrigger = 'initial' | 'incremental' | 'on_demand' | 'backfill' | 'webhook';
 

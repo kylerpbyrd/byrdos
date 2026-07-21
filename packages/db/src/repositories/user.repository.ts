@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import type { UserRepository, CreateUserInput, User, UserStatus } from '@byrdos/domain';
-import type { DbClient } from '../client';
-import { users } from '../schema/user.schema';
+import type { DbClient } from '../client.js';
+import { users } from '../schema/user.schema.js';
 
 function mapRow(row: typeof users.$inferSelect): User {
   return {

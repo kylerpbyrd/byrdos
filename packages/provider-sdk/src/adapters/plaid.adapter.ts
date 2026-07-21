@@ -10,7 +10,7 @@ import {
   type AccountsGetRequest,
   type TransactionsSyncRequest,
 } from 'plaid';
-import type { IProviderAdapter } from '../adapter.interface';
+import type { IProviderAdapter } from '../adapter.interface.js';
 import type {
   ProviderId,
   LinkToken,
@@ -24,7 +24,7 @@ import type {
   RawWebhook,
   WebhookResult,
 } from '@byrdos/contracts';
-import { ProviderError } from '../errors';
+import { ProviderError } from '../errors.js';
 
 export interface PlaidAdapterConfig {
   clientId: string;

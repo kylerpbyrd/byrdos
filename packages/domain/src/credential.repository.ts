@@ -1,4 +1,4 @@
-import type { Credential } from './credential.entity';
+import type { Credential } from './credential.entity.js';
 
 export interface CredentialRepository {
   findById(id: string): Promise<Credential | null>;
