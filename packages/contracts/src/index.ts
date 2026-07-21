@@ -1,1 +1,1 @@
-export * from './provider.dto';
+export * from './provider-schema.js';
