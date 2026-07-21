@@ -1,4 +1,1 @@
-/**
- * @byrdos/contracts placeholder
- */
-export {};
+export * from './provider.dto';
