@@ -18,13 +18,15 @@
   "dependencies": {
     "@byrdos/domain": "workspace:*",
     "drizzle-orm": "^0.38.0",
-    "postgres": "^3.4.0"
+    "postgres": "^3.4.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@byrdos/config": "workspace:*",
     "@byrdos/tsconfig": "workspace:*",
     "@types/node": "^20.17.0",
     "@types/pg": "^8.11.0",
+    "@types/uuid": "^10.0.0",
     "drizzle-kit": "^0.30.0",
     "typescript": "^5.7.0"
   }
