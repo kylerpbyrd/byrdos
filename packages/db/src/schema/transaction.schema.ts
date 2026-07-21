@@ -8,7 +8,7 @@ import {
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { accounts } from './account.schema';
+import { accounts } from './account.schema.js';
 
 export const transactions = pgTable(
   'transactions',

@@ -84,7 +84,7 @@ export class IntegrationService {
       (conn as { __accessToken?: string }).__accessToken = token;
     }
 
-    await adapter.revoke(conn);
+    await adapter.revoke(conn as any);
     await this.connectionRepo.updateStatus(connectionId, 'error');
     await this.integrationRepo.updateStatus(conn.integrationId, 'revoked');
 

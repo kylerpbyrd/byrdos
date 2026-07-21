@@ -1,5 +1,5 @@
 {
-  "extends": "@byrdos/tsconfig/base.json",
+  "extends": "@byrdos/tsconfig/nestjs.json",
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src"

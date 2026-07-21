@@ -1,5 +1,5 @@
 import { pgTable, integer, text, timestamp, varchar } from 'drizzle-orm/pg-core';
-import { accounts } from './account.schema';
+import { accounts } from './account.schema.js';
 
 export const balances = pgTable('balances', {
   id: text('id').primaryKey(), // UUID v7

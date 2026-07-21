@@ -1,5 +1,5 @@
 import { pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core';
-import { providerConnections } from './provider-connection.schema';
+import { providerConnections } from './provider-connection.schema.js';
 
 export const syncJobs = pgTable('sync_jobs', {
   id: text('id').primaryKey(), // UUID v7

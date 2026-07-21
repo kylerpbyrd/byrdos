@@ -1,4 +1,4 @@
-import type { IProviderAdapter } from './adapter.interface';
+import type { IProviderAdapter } from './adapter.interface.js';
 import type { ProviderId } from '@byrdos/contracts';
 
 export class ProviderRegistry {

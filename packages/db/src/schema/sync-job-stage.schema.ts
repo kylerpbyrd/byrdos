@@ -1,5 +1,5 @@
 import { pgTable, integer, text, varchar } from 'drizzle-orm/pg-core';
-import { syncJobs } from './sync-job.schema';
+import { syncJobs } from './sync-job.schema.js';
 
 export const syncJobStages = pgTable('sync_job_stages', {
   id: text('id').primaryKey(), // UUID v7
