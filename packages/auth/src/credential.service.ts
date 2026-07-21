@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import type { Credential } from '@byrdos/domain';
-import { encrypt, decrypt, getKeyRing } from './encryption';
+import { encrypt, decrypt, getKeyRing } from './encryption.js';
 
 export interface CredentialRepository {
   findById(id: string): Promise<Credential | null>;
