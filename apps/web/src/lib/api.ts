@@ -101,6 +101,14 @@ export async function listIntegrations(token?: string): Promise<unknown[]> {
   }
 }
 
+export async function fetchIntegration(token: string, id: string): Promise<unknown> {
+  const result = await apiFetch<unknown | { error: string }>(`/links/${id}`, { token });
+  if (result && typeof result === 'object' && 'error' in result) {
+    throw new Error((result as { error: string }).error);
+  }
+  return result;
+}
+
 export async function revokeConnection(connectionId: string, token?: string): Promise<void> {
   await apiFetch(`/links/${connectionId}`, { method: 'DELETE', token });
 }

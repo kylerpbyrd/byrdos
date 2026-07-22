@@ -1,110 +1,80 @@
 import { test, expect } from '@playwright/test';
-
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:4000/api';
-
-function uniqueEmail() {
-  return `test-${Date.now()}@example.com`;
-}
-
-interface SignupResponse {
-  user: { id: string; email: string };
-  accessToken: string;
-}
-
-interface ApiError {
-  message?: string;
-  statusCode?: number;
-}
+import { API_BASE_URL, createTestUser } from './helpers.js';
 
 test.describe('Authentication API flows', () => {
   /* Auth flow tests must start with a clean browser state */
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('signup creates account and returns tokens', async () => {
-    const email = uniqueEmail();
-    const password = 'TestPassword123!';
-    const name = 'E2E Test User';
+  test('signup creates a new user', async ({ request }) => {
+    const credentials = createTestUser();
 
-    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name }),
+    const response = await request.post(`${API_BASE_URL}/auth/signup`, {
+      data: credentials,
     });
 
-    expect(response.status).toBe(201);
-    const body = (await response.json()) as SignupResponse;
+    expect(response.status()).toBe(201);
+    const body = await response.json();
     expect(body).toHaveProperty('user');
     expect(body.user).toHaveProperty('id');
-    expect(body.user.email).toBe(email);
+    expect(body.user.email).toBe(credentials.email);
     expect(body).toHaveProperty('accessToken');
     expect(typeof body.accessToken).toBe('string');
     expect(body.accessToken.length).toBeGreaterThan(0);
   });
 
-  test('signin returns access token for valid credentials', async () => {
-    const email = uniqueEmail();
-    const password = 'TestPassword123!';
+  test('login returns JWT', async ({ request }) => {
+    const credentials = createTestUser();
 
-    const signup = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name: 'E2E User' }),
+    const signup = await request.post(`${API_BASE_URL}/auth/signup`, {
+      data: credentials,
     });
-    expect(signup.status).toBe(201);
+    expect(signup.status()).toBe(201);
 
-    const response = await fetch(`${API_BASE_URL}/auth/signin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+    const response = await request.post(`${API_BASE_URL}/auth/signin`, {
+      data: { email: credentials.email, password: credentials.password },
     });
 
-    expect(response.status).toBe(200);
-    const body = (await response.json()) as SignupResponse;
+    expect(response.status()).toBe(200);
+    const body = await response.json();
     expect(body).toHaveProperty('accessToken');
     expect(typeof body.accessToken).toBe('string');
     expect(body.accessToken.length).toBeGreaterThan(0);
   });
 
-  test('duplicate signup returns conflict', async () => {
-    const email = uniqueEmail();
-    const password = 'TestPassword123!';
+  test('invalid login returns 401', async ({ request }) => {
+    const credentials = createTestUser();
 
-    const first = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name: 'E2E User' }),
+    const signup = await request.post(`${API_BASE_URL}/auth/signup`, {
+      data: credentials,
     });
-    expect(first.status).toBe(201);
+    expect(signup.status()).toBe(201);
 
-    const second = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name: 'E2E User' }),
+    const response = await request.post(`${API_BASE_URL}/auth/signin`, {
+      data: { email: credentials.email, password: 'wrong-password-123' },
     });
 
-    expect(second.status).toBeGreaterThanOrEqual(400);
-    expect(second.status).toBeLessThan(500);
-    const body = (await second.json().catch(() => ({}))) as ApiError;
-    expect(body.message || second.statusText).toBeTruthy();
+    expect(response.status()).toBe(401);
   });
 
-  test('invalid signin returns unauthorized', async () => {
-    const email = uniqueEmail();
-    const password = 'TestPassword123!';
+  test('duplicate signup returns 409', async ({ request }) => {
+    const credentials = createTestUser();
 
-    const signup = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name: 'E2E User' }),
+    const first = await request.post(`${API_BASE_URL}/auth/signup`, {
+      data: credentials,
     });
-    expect(signup.status).toBe(201);
+    expect(first.status()).toBe(201);
 
-    const response = await fetch(`${API_BASE_URL}/auth/signin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: 'wrong-password-123' }),
+    const second = await request.post(`${API_BASE_URL}/auth/signup`, {
+      data: credentials,
     });
 
-    expect(response.status).toBe(401);
+    expect(second.status()).toBe(409);
+    const body = await second.json().catch(() => ({}));
+    expect(body.message || second.statusText()).toBeTruthy();
+  });
+
+  test('protected route requires auth', async ({ request }) => {
+    const response = await request.get(`${API_BASE_URL}/accounts`);
+    expect(response.status()).toBe(401);
   });
 });
