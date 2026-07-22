@@ -56,7 +56,7 @@ export default async function SettingsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" asChild className="w-full justify-between">
+            <Button variant="outline" asChild className="justify-between">
               <Link href="/settings/integrations">
                 Manage integrations
                 <ChevronRight className="size-4" />

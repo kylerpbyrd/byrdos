@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { fetchAccounts } from '@/lib/api';
 import {
   AccountBadge,
-  Button,
   Card,
   CardContent,
   EmptyState,
@@ -28,17 +27,9 @@ export default async function AccountsPage() {
   return (
     <div className="min-h-[calc(100vh-56px)] bg-background p-4 md:min-h-screen md:p-8">
       <div className="mx-auto max-w-4xl">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground md:text-3xl">Accounts</h1>
-            <p className="mt-1 text-muted">All your connected accounts in one place.</p>
-          </div>
-          <Button asChild>
-            <Link href="/connect">
-              <Plus className="size-4" />
-              Connect a bank
-            </Link>
-          </Button>
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground md:text-3xl">Accounts</h1>
+          <p className="mt-1 text-muted">All your connected accounts in one place.</p>
         </div>
 
         {accounts.length === 0 ? (
