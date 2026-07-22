@@ -4,13 +4,15 @@ import { useCallback, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { usePlaidLink, type PlaidLinkOnSuccessMetadata } from 'react-plaid-link';
 import { initiateLink, exchangeLinkToken } from '@/lib/api';
+import { Button } from '@byrdos/ui';
 
 interface PlaidLinkButtonProps {
   onSuccess?: () => void;
   onExit?: () => void;
+  children?: React.ReactNode;
 }
 
-export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
+export function PlaidLinkButton({ onSuccess, onExit, children }: PlaidLinkButtonProps) {
   const { data: session } = useSession();
   const token = session?.accessToken;
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -20,8 +22,6 @@ export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
   const onPlaidSuccess = useCallback(
     async (publicToken: string, metadata: PlaidLinkOnSuccessMetadata) => {
       try {
-        // Exchange the public token
-        // The integrationId was stored when we called initiateLink
         const storedIntegrationId = sessionStorage.getItem('pendingIntegrationId');
         if (!storedIntegrationId) {
           throw new Error('No pending integration found');
@@ -66,7 +66,6 @@ export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
       const result = await initiateLink('plaid', token);
       sessionStorage.setItem('pendingIntegrationId', result.integrationId);
       setLinkToken(result.linkToken);
-      // Plaid Link will open automatically when token is set
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to connect');
     } finally {
@@ -74,7 +73,6 @@ export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
     }
   };
 
-  // Open Plaid Link when token is ready
   if (linkToken && ready) {
     open();
   }
@@ -86,28 +84,26 @@ export function PlaidLinkButton({ onSuccess, onExit }: PlaidLinkButtonProps) {
           {error}
         </div>
       )}
-      <button
-        onClick={handleConnect}
-        disabled={loading}
-        className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
-      >
+      <Button onClick={handleConnect} disabled={loading}>
         {loading ? (
-          <>Connecting...</>
+          <>Connecting…</>
         ) : (
-          <>
-            <svg
-              className="size-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Connect Bank Account
-          </>
+          children || (
+            <>
+              <svg
+                className="size-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Connect Bank Account
+            </>
+          )
         )}
-      </button>
+      </Button>
     </div>
   );
 }

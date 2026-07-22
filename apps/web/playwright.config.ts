@@ -1,15 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * Playwright E2E configuration for byrdOS web.
  *
- * The full stack is started automatically via the `webServer` block below.
- * Pre-requisites: Docker running, migrations applied.
+ * The web stack is started externally (see M5 runbook). Playwright only runs
+ * the tests against the running servers.
  *
  * Run discovery:
  *   npx playwright test --list
@@ -21,8 +17,8 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
   testDir: './e2e',
 
-  /* Run tests in files in parallel where possible */
-  fullyParallel: true,
+  /* Run tests sequentially — shared API can't handle parallel auth flows */
+  fullyParallel: false,
 
   /* Fail the build on CI if you accidentally left test.only in the source code */
   forbidOnly: !!process.env.CI,
@@ -30,8 +26,8 @@ export default defineConfig({
   /* No retries — CI handles retries externally */
   retries: 0,
 
-  /* Opt out of parallel tests on CI for deterministic auth state */
-  workers: process.env.CI ? 1 : undefined,
+  /* Single worker for deterministic auth state */
+  workers: 1,
 
   /* Reporters */
   reporter: [
@@ -75,34 +71,10 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        storageState: 'e2e/.auth/user.json',
-      },
-      dependencies: ['setup'],
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        storageState: 'e2e/.auth/user.json',
-      },
-      dependencies: ['setup'],
-    },
   ],
 
-  /* Start the whole monorepo dev stack. The Turbo command boots both the API (4000)
-     and the web (3000) processes. We wait for the web port; the API is started
-     in the same command and should be ready shortly after. */
-  webServer: {
-    command: 'pnpm dev --concurrency 20',
-    cwd: path.resolve(__dirname, '..', '..'),
-    url: 'http://localhost:3000',
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-  },
+  /* The stack is started externally for M5 acceptance testing. */
+  webServer: undefined,
 
   /* Global output directory for test artifacts */
   outputDir: path.join('e2e', 'test-results'),

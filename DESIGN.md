@@ -5,6 +5,8 @@
 > **Status:** Seed (expanded iteratively through M5)  
 > **Owner:** Frontend agent  
 > **Inherits:** ADR-0000 §9 Documentation standards, ADR-0001 styling decision
+> **Workflow:** All frontend features follow the 8-phase pipeline defined in `AGENTS.md` § FRONTEND WORKFLOW
+> **Design skills:** Frontend Design, Interface Design, Interaction Design, Impeccable, Baseline UI, Frontend Design Review, Web Design Guidelines — invoked per-phase by the Architect
 
 ---
 
@@ -228,5 +230,6 @@ Use `lucide-react` (tree-shakeable, consistent 24×24 grid). Provider logos are 
 ## Changelog
 
 | Date | Change | Author |
-|---|---|---|
+|---|---|---|---|
+| 2026-07-21 | Added 8-phase frontend workflow + design skill pipeline reference | Architect |
 | 2026-07-20 | Initial seed: tokens, components, layout, a11y, motion | Architect (byrdOS) |

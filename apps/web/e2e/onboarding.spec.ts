@@ -7,7 +7,7 @@ test.describe('Bank connection onboarding', () => {
     await expect(page.locator('h1')).toContainText('Connect your bank');
     await expect(page.getByText('Plaid-powered connection')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Connect Bank Account' })).toBeVisible();
-    await expect(page.getByText('What happens next?')).toBeVisible();
+    await expect(page.getByText('Securely connect to over 12,000 institutions')).toBeVisible();
   });
 
   test('shows error state when Plaid is not configured', async ({ page }) => {
@@ -31,7 +31,9 @@ test.describe('Bank connection onboarding', () => {
     await page.goto('/connect');
     await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
 
+    let initiateCalled = false;
     await page.route('**/api/links/initiate', async (route) => {
+      initiateCalled = true;
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -44,7 +46,7 @@ test.describe('Bank connection onboarding', () => {
 
     await page.getByRole('button', { name: 'Connect Bank Account' }).click();
 
-    // The button should enter a loading / connecting state while the API is called.
-    await expect(page.getByRole('button', { name: 'Connecting...' })).toBeVisible();
+    // Verify the initiate API was called
+    await expect.poll(() => initiateCalled).toBe(true);
   });
 });

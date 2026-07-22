@@ -15,7 +15,7 @@ test.describe('Account views with auth', () => {
     await page.goto('/accounts');
 
     await expect(page.locator('h1')).toContainText('Accounts');
-    await expect(page.locator('h2:has-text("No accounts yet")')).toBeVisible();
+    await expect(page.locator('h3:has-text("No accounts yet")')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Connect a bank' }).first()).toBeVisible();
   });
 
@@ -26,7 +26,7 @@ test.describe('Account views with auth', () => {
     await expect(page.locator('.animate-pulse').first()).toBeVisible();
 
     await expect(page.locator('h1')).toContainText('Accounts');
-    await expect(page.locator('h2:has-text("No accounts yet")')).toBeVisible();
+    await expect(page.locator('h3:has-text("No accounts yet")')).toBeVisible();
   });
 
   test('nonexistent account detail shows 404', async ({ page }) => {
