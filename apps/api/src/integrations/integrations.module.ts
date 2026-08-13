@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { Queue } from 'bullmq';
+import { Redis } from 'ioredis';
 import { IntegrationsController } from './integrations.controller.js';
 import { IntegrationService } from './integration.service.js';
 import { createProviderRegistry } from '@byrdos/provider-sdk';
@@ -10,6 +12,7 @@ import {
   db,
 } from '@byrdos/db';
 import { AuthModule } from '../auth/auth.module.js';
+import { QUEUES, type SyncJobData } from '@byrdos/queue';
 
 @Module({
   imports: [AuthModule],
@@ -25,7 +28,12 @@ import { AuthModule } from '../auth/auth.module.js';
         const connectionRepo = new DrizzleProviderConnectionRepository(db);
         const credentialService = new CredentialService(credentialRepo);
 
-        return new IntegrationService(registry, integrationRepo, credentialRepo, connectionRepo, credentialService);
+        const redisConnection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+          maxRetriesPerRequest: null,
+        });
+        const syncQueue = new Queue<SyncJobData>(QUEUES.SYNC, { connection: redisConnection });
+
+        return new IntegrationService(registry, integrationRepo, credentialRepo, connectionRepo, credentialService, syncQueue);
       },
     },
   ],

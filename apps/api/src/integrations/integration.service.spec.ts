@@ -6,6 +6,8 @@ import { ProviderRegistry } from '@byrdos/provider-sdk';
 import type { IProviderAdapter } from '@byrdos/provider-sdk';
 import type { ProviderConnection } from '@byrdos/domain';
 import type { ExchangeResult } from '@byrdos/contracts';
+import { Queue } from 'bullmq';
+import type { SyncJobData } from '@byrdos/queue';
 import { IntegrationService, type LinkMetadata } from './integration.service.js';
 
 const currentUser = 'current-user';
@@ -73,6 +75,8 @@ describe('IntegrationService', () => {
   const registryGet = vi.fn<ProviderRegistry['get']>();
   const registry = { get: registryGet } as unknown as ProviderRegistry;
 
+  const syncQueue = { add: vi.fn().mockResolvedValue({}) } as unknown as Queue<SyncJobData>;
+
   beforeEach(() => {
     vi.resetAllMocks();
     registryGet.mockReturnValue(adapter);
@@ -82,6 +86,7 @@ describe('IntegrationService', () => {
       credentialRepo,
       connectionRepo,
       credentialService,
+      syncQueue,
     );
   });
 

@@ -8,6 +8,8 @@ import type {
   DrizzleCredentialRepository,
   DrizzleProviderConnectionRepository,
 } from '@byrdos/db';
+import { Queue } from 'bullmq';
+import { QUEUES, type SyncJobData } from '@byrdos/queue';
 
 export interface LinkMetadata {
   institution?: { name: string; institution_id: string };
@@ -22,6 +24,7 @@ export class IntegrationService {
     private readonly credentialRepo: DrizzleCredentialRepository,
     private readonly connectionRepo: DrizzleProviderConnectionRepository,
     private readonly credentialService: CredentialService,
+    private readonly syncQueue: Queue<SyncJobData>,
   ) {}
 
   async initiateLink(
@@ -57,6 +60,14 @@ export class IntegrationService {
       integrationId,
       externalId: result.connection.externalId,
       institutionName: result.connection.institutionName,
+    });
+
+    await this.syncQueue.add(`initial-${connection.id}`, {
+      connectionId: connection.id,
+      integrationId,
+      userId,
+      providerId: integration.providerId,
+      trigger: 'initial',
     });
 
     return connection;
