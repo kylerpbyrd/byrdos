@@ -20,7 +20,7 @@ Each sync type becomes a `SyncJob` row with a `type` field and follows the same 
 ```mermaid
 flowchart LR
     T[Trigger] --> Q1[queue: sync]
-    Q1 --> JW[SyncOrchestrator]
+    Q1 -->     JW[createSyncWorker]
     JW --> |stage 1| Q2[queue: accounts]
     Q2 --> A[AccountsWorker] --> DB1[(accounts, balances)]
     JW --> |stage 2| Q3[queue: transactions]
@@ -32,7 +32,7 @@ flowchart LR
 ```
 
 1. **Trigger** enqueues a job on the `sync` queue.
-2. **SyncOrchestrator** (a FlowProducer job) creates child jobs for accounts and transactions.
+2. **createSyncWorker()** (a `Worker` on the `sync` queue) creates the `SyncJob` record and enqueues a FlowProducer graph where accounts run before transactions.
 3. **AccountsWorker** fetches accounts and balances, upserts them, and emits `AccountsSynced`.
 4. **TransactionsWorker** fetches transactions with cursor-based pagination and emits `TransactionsFetched`.
 5. **ClassifyWorker** consumes batches of unclassified transactions and assigns categories (v1 is a deterministic stub; v3 will use AI).
@@ -40,22 +40,22 @@ flowchart LR
 
 ## BullMQ FlowProducer orchestration
 
-`FlowProducer` creates a dependency graph of jobs. Child jobs run when their parents complete.
+`FlowProducer` builds a parent→children tree. A **parent job runs only after all its children complete** (children run first, parent runs last).
 
 ```typescript
+// Accounts must exist before transactions, so accounts is the child
+// (children complete first) and transactions is the parent.
 await flowProducer.add({
-  name: 'sync',
-  queueName: 'sync',
-  data: { connectionId, type: 'incremental' },
+  name: `${TRANSACTIONS_JOB}-${syncJobId}`,
+  queueName: QUEUES.TRANSACTIONS,
+  data: transactionsJob,
+  opts: DEFAULT_RETRY,
   children: [
-    { name: 'accounts', queueName: 'accounts', data: { connectionId } },
     {
-      name: 'transactions',
-      queueName: 'transactions',
-      data: { connectionId },
-      children: [
-        { name: 'classify', queueName: 'classify', data: { connectionId } },
-      ],
+      name: `${ACCOUNTS_JOB}-${syncJobId}`,
+      queueName: QUEUES.ACCOUNTS,
+      data: accountsJob,
+      opts: DEFAULT_RETRY,
     },
   ],
 });
@@ -65,7 +65,7 @@ await flowProducer.add({
 
 | Worker | Queue | Concurrency | Rate limit |
 |---|---|---|---|
-| `SyncOrchestrator` | `sync` | 5 | per-user |
+| `createSyncWorker()` | `sync` | 5 | per-user |
 | `AccountsWorker` | `accounts` | 10 | per-provider |
 | `TransactionsWorker` | `transactions` | 10 | per-provider |
 | `ClassifyWorker` | `classify` | 5 | — |
@@ -139,7 +139,7 @@ queued → running → accounts_done → tx_done → completed | failed | partia
 | State | Meaning |
 |---|---|
 | `queued` | Job waiting on BullMQ |
-| `running` | Orchestrator started |
+| `running` | Sync worker started |
 | `accounts_done` | Accounts stage succeeded |
 | `tx_done` | Transactions stage succeeded |
 | `completed` | All stages succeeded |
@@ -184,7 +184,7 @@ Every sync stage is an OTEL span. The parent trace id is propagated via job data
 
 ## Consequences
 
-- **Positive**: FlowProducer cleanly models stage dependencies and partial failures.
+- **Positive**: FlowProducer cleanly models parent-after-children completion and partial failures.
 - **Positive**: Workers are independently scalable.
 - **Negative**: Redis is on the critical path; if Redis is down, sync pauses.
 - **Negative**: FlowProducer graphs are harder to debug than linear queues; tracing is essential.

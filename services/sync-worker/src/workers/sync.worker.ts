@@ -51,17 +51,17 @@ export function createSyncWorker(): Worker<SyncJobData> {
         startDate: data.dateRange?.start,
       };
 
-      // Accounts runs first; transactions waits for accounts to complete
+      // Accounts must run before transactions (children complete before parent)
       await flowProducer.add({
-        name: `${ACCOUNTS_JOB}-${syncJobId}`,
-        queueName: QUEUES.ACCOUNTS,
-        data: accountsJob,
+        name: `${TRANSACTIONS_JOB}-${syncJobId}`,
+        queueName: QUEUES.TRANSACTIONS,
+        data: transactionsJob,
         opts: DEFAULT_RETRY,
         children: [
           {
-            name: `${TRANSACTIONS_JOB}-${syncJobId}`,
-            queueName: QUEUES.TRANSACTIONS,
-            data: transactionsJob,
+            name: `${ACCOUNTS_JOB}-${syncJobId}`,
+            queueName: QUEUES.ACCOUNTS,
+            data: accountsJob,
             opts: DEFAULT_RETRY,
           },
         ],
