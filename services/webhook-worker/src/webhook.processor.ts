@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import { QUEUES, type WebhookJobData, type SyncJobData } from '@byrdos/queue';
-import { PlaidAdapter } from '@byrdos/provider-sdk';
+import { createProviderRegistry } from '@byrdos/provider-sdk';
 import type { ProviderId } from '@byrdos/contracts';
 import { syncQueue } from './queues.js';
 import { connection } from './redis.js';
@@ -11,14 +11,7 @@ export function createWebhookWorker(): Worker<WebhookJobData> {
     async (job) => {
       const { providerId, webhookType, webhookCode, payload, signature } = job.data;
 
-      const adapter = new PlaidAdapter({
-        clientId: process.env.PLAID_CLIENT_ID || '',
-        secret: process.env.PLAID_SECRET || '',
-        environment:
-          (process.env.PLAID_ENV as 'sandbox' | 'development' | 'production') ||
-          'sandbox',
-        webhookVerificationKey: process.env.PLAID_WEBHOOK_KEY || '',
-      });
+      const adapter = createProviderRegistry().get(providerId as ProviderId);
 
       const result = await adapter.handleWebhook({
         providerId: providerId as ProviderId,

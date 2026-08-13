@@ -2,10 +2,10 @@ import { Worker } from 'bullmq';
 import { connection } from '../redis.js';
 import { QUEUES, type AccountsJobData } from '@byrdos/queue';
 import { db, accounts, balances, DrizzleCredentialRepository } from '@byrdos/db';
-import { PlaidAdapter } from '@byrdos/provider-sdk';
+import { createProviderRegistry } from '@byrdos/provider-sdk';
 import { CredentialService } from '@byrdos/auth';
 import { v7 as uuidv7 } from 'uuid';
-import type { ProviderConnection } from '@byrdos/contracts';
+import type { ProviderConnection, ProviderId } from '@byrdos/contracts';
 import { markSyncJobFailed } from '../sync-job-status.js';
 
 export function createAccountsWorker(): Worker<AccountsJobData> {
@@ -26,13 +26,7 @@ export function createAccountsWorker(): Worker<AccountsJobData> {
       const accessToken = await credService.getToken(credential.id);
 
       // Create adapter
-      const adapter = new PlaidAdapter({
-        clientId: process.env.PLAID_CLIENT_ID || '',
-        secret: process.env.PLAID_SECRET || '',
-        environment:
-          (process.env.PLAID_ENV as 'sandbox' | 'development' | 'production') || 'sandbox',
-        webhookVerificationKey: process.env.PLAID_WEBHOOK_KEY || '',
-      });
+      const adapter = createProviderRegistry().get(job.data.providerId as ProviderId);
 
       const connectionStub: ProviderConnection & { __accessToken: string } = {
         id: connectionId,

@@ -2,11 +2,11 @@ import { Worker } from 'bullmq';
 import { connection } from '../redis.js';
 import { QUEUES, type TransactionsJobData } from '@byrdos/queue';
 import { db, transactions, syncCursors, accounts, DrizzleCredentialRepository } from '@byrdos/db';
-import { PlaidAdapter } from '@byrdos/provider-sdk';
+import { createProviderRegistry } from '@byrdos/provider-sdk';
 import { CredentialService } from '@byrdos/auth';
 import { v7 as uuidv7 } from 'uuid';
 import { eq, and, inArray, sql } from 'drizzle-orm';
-import type { ProviderConnection } from '@byrdos/contracts';
+import type { ProviderConnection, ProviderId } from '@byrdos/contracts';
 import {
   markSyncJobComplete,
   markSyncJobFailed,
@@ -42,13 +42,7 @@ export function createTransactionsWorker(): Worker<TransactionsJobData> {
       const accountMap = new Map(accountRows.map((a) => [a.externalId, a.id]));
       const accountIdsForConnection = accountRows.map((a) => a.id);
 
-      const adapter = new PlaidAdapter({
-        clientId: process.env.PLAID_CLIENT_ID || '',
-        secret: process.env.PLAID_SECRET || '',
-        environment:
-          (process.env.PLAID_ENV as 'sandbox' | 'development' | 'production') || 'sandbox',
-        webhookVerificationKey: process.env.PLAID_WEBHOOK_KEY || '',
-      });
+      const adapter = createProviderRegistry().get(job.data.providerId as ProviderId);
 
       let count = 0;
       const batchTxIds: string[] = [];
