@@ -1,3 +1,5 @@
+// DEFERRED per RFC-0001 Decision 3: CLASSIFY, NOTIFICATIONS, OUTBOX, and SYNC_DEAD
+// have no consumer yet. Wire only after a consumer + event shape + retry policy are defined.
 export const QUEUES = {
   SYNC: 'sync',
   ACCOUNTS: 'accounts',

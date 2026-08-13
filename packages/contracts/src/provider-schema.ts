@@ -48,6 +48,13 @@ export const ProviderConnectionSchema = z.object({
 });
 export type ProviderConnection = z.infer<typeof ProviderConnectionSchema>;
 
+// ── Token Exchange Result ──
+export const ExchangeResultSchema = z.object({
+  connection: ProviderConnectionSchema,
+  accessToken: z.string(), // encrypted at rest by the service layer; NEVER returned to API clients
+});
+export type ExchangeResult = z.infer<typeof ExchangeResultSchema>;
+
 // ── Accounts ──
 export const ProviderAccountSchema = z.object({
   externalId: z.string(), // Plaid: account_id
@@ -91,6 +98,16 @@ export const ProviderTransactionSchema = z.object({
   raw: z.record(z.unknown()).nullable(), // full provider payload
 });
 export type ProviderTransaction = z.infer<typeof ProviderTransactionSchema>;
+
+// ── Transaction Batch (cursor page) ──
+export const TransactionBatchSchema = z.object({
+  added: z.array(ProviderTransactionSchema),
+  modified: z.array(ProviderTransactionSchema),
+  removed: z.array(z.string()), // external transaction IDs to delete
+  nextCursor: z.string().nullable(),
+  hasMore: z.boolean(),
+});
+export type TransactionBatch = z.infer<typeof TransactionBatchSchema>;
 
 // ── Sync ──
 export const SyncCursorSchema = z.object({

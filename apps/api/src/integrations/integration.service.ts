@@ -41,24 +41,22 @@ export class IntegrationService {
   async exchangeToken(
     integrationId: string,
     publicToken: string,
+    userId: string,
     metadata?: LinkMetadata,
   ): Promise<ProviderConnection> {
-    const adapter = this.registry.get('plaid'); // For now, only Plaid
+    const integration = await this.integrationRepo.findById(integrationId);
+    if (!integration) throw new NotFoundException('Integration not found');
+    if (integration.userId !== userId) throw new ForbiddenException('Forbidden');
+
+    const adapter = this.registry.get(integration.providerId);
     const result = await adapter.exchangePublicToken({ publicToken, metadata });
 
-    // Store encrypted access token
-    // In a real Plaid flow, exchangePublicToken also returns access_token.
-    // The adapter's exchangePublicToken returns a ProviderConnection but the token
-    // is obtained separately. For this integration, we store a placeholder.
-    // The actual access_token is stored by the adapter internally.
-    // For now, we create credential with a placeholder — full flow in M3 sync pipeline.
-    await this.credentialService.storeToken(integrationId, 'placeholder-token');
+    await this.credentialService.storeToken(integrationId, result.accessToken);
 
-    // Create provider connection
     const connection = await this.connectionRepo.create({
       integrationId,
-      externalId: result.externalId,
-      institutionName: result.institutionName,
+      externalId: result.connection.externalId,
+      institutionName: result.connection.institutionName,
     });
 
     return connection;

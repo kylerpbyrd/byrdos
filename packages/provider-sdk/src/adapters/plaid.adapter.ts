@@ -9,6 +9,8 @@ import {
   type ItemPublicTokenExchangeRequest,
   type AccountsGetRequest,
   type TransactionsSyncRequest,
+  type Transaction,
+  type RemovedTransaction,
 } from 'plaid';
 import type { IProviderAdapter } from '../adapter.interface.js';
 import type {
@@ -16,9 +18,11 @@ import type {
   LinkToken,
   LinkCallback,
   ProviderConnection,
+  ExchangeResult,
   ProviderAccount,
   ProviderBalance,
   ProviderTransaction,
+  TransactionBatch,
   SyncCursor,
   DateRange,
   RawWebhook,
@@ -40,6 +44,11 @@ export class PlaidAdapter implements IProviderAdapter {
 
   constructor(config: PlaidAdapterConfig) {
     this.config = config;
+    if (config.environment === 'production' && process.env.PLAID_ALLOW_PRODUCTION !== 'true') {
+      throw new Error(
+        'PlaidAdapter refused to start in production. Production billing is only enabled by setting PLAID_ALLOW_PRODUCTION=true explicitly. Sandbox is always free.'
+      );
+    }
     const plaidEnv =
       config.environment === 'production'
         ? PlaidEnvironments.production
@@ -81,17 +90,18 @@ export class PlaidAdapter implements IProviderAdapter {
     }
   }
 
-  async exchangePublicToken(payload: LinkCallback): Promise<ProviderConnection> {
+  async exchangePublicToken(payload: LinkCallback): Promise<ExchangeResult> {
     try {
       const request: ItemPublicTokenExchangeRequest = {
         public_token: payload.publicToken,
       };
 
       const response = await this.client.itemPublicTokenExchange(request);
+      const accessToken = response.data.access_token;
       const itemId = response.data.item_id;
       const institutionName = payload.metadata?.institution?.name ?? null;
 
-      return {
+      const connection: ProviderConnection = {
         id: '', // Assigned by service layer after DB insert
         integrationId: '', // Assigned by service layer
         externalId: itemId,
@@ -101,6 +111,8 @@ export class PlaidAdapter implements IProviderAdapter {
         lastWebhookAt: null,
         createdAt: new Date().toISOString(),
       };
+
+      return { connection, accessToken };
     } catch (error: unknown) {
       throw this.mapError(error);
     }
@@ -181,12 +193,30 @@ export class PlaidAdapter implements IProviderAdapter {
     }
   }
 
+  private mapTransaction(txn: Transaction): ProviderTransaction {
+    return {
+      externalId: txn.transaction_id,
+      accountExternalId: txn.account_id,
+      amount: Math.round(txn.amount * 100), // Plaid returns dollars; convert to cents. Negative = debit
+      date: txn.date,
+      authorizedDate: txn.authorized_date ?? null,
+      name: txn.name,
+      merchantName: txn.merchant_name ?? null,
+      pending: txn.pending,
+      pendingTransactionExternalId: txn.pending_transaction_id ?? null,
+      category: txn.category ?? null,
+      paymentChannel: txn.payment_channel ?? null,
+      isoCurrencyCode: txn.iso_currency_code ?? null,
+      raw: txn as unknown as Record<string, unknown>,
+    };
+  }
+
   async *listTransactions(
     connection: ProviderConnection,
     cursor: SyncCursor,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _range: DateRange,
-  ): AsyncIterable<ProviderTransaction> {
+  ): AsyncIterable<TransactionBatch> {
     try {
       const accessToken = (connection as { __accessToken?: string }).__accessToken;
       if (!accessToken) {
@@ -205,33 +235,20 @@ export class PlaidAdapter implements IProviderAdapter {
         const response = await this.client.transactionsSync(request);
         const data = response.data;
 
-        for (const txn of data.added) {
-          yield {
-            externalId: txn.transaction_id,
-            accountExternalId: txn.account_id,
-            amount: Math.round(txn.amount * 100), // Plaid returns dollars; convert to cents. Negative = debit
-            date: txn.date,
-            authorizedDate: txn.authorized_date ?? null,
-            name: txn.name,
-            merchantName: txn.merchant_name ?? null,
-            pending: txn.pending,
-            pendingTransactionExternalId: txn.pending_transaction_id ?? null,
-            category: txn.category ?? null,
-            paymentChannel: txn.payment_channel ?? null,
-            isoCurrencyCode: txn.iso_currency_code ?? null,
-            raw: txn as unknown as Record<string, unknown>,
-          };
-        }
+        const added = data.added.map((txn) => this.mapTransaction(txn));
+        const modified = data.modified.map((txn) => this.mapTransaction(txn));
+        const removed = data.removed.map((r: RemovedTransaction) => r.transaction_id);
+
+        yield {
+          added,
+          modified,
+          removed,
+          nextCursor: data.next_cursor,
+          hasMore: data.has_more,
+        };
 
         hasMore = data.has_more;
         currentCursor = data.next_cursor;
-
-        // Update the cursor for the next iteration
-        cursor = {
-          resourceType: cursor.resourceType,
-          cursor: data.next_cursor,
-          updatedAt: new Date().toISOString(),
-        };
       }
     } catch (error: unknown) {
       throw this.mapError(error);

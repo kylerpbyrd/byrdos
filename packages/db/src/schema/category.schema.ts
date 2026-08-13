@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, varchar, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { users } from './user.schema.js';
 
 export const categories = pgTable(
@@ -15,5 +15,6 @@ export const categories = pgTable(
   (table) => [
     index('categories_user_id_idx').on(table.userId),
     index('categories_parent_id_idx').on(table.parentId),
+    uniqueIndex('categories_user_norm_name_idx').on(table.userId, table.normName),
   ],
 );

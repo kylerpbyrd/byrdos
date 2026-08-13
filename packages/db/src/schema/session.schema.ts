@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, varchar, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { users } from './user.schema.js';
 
 export const sessions = pgTable(
@@ -15,5 +15,8 @@ export const sessions = pgTable(
     ipAddress: varchar('ip_address', { length: 45 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('sessions_user_id_idx').on(table.userId)],
+  (table) => [
+    index('sessions_user_id_idx').on(table.userId),
+    uniqueIndex('sessions_refresh_hash_idx').on(table.refreshHash),
+  ],
 );

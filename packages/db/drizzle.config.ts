@@ -7,7 +7,7 @@ import { loadEnvFile } from 'process';
 loadEnvFile(resolve('../../.env'));
 
 export default defineConfig({
-  schema: './src/schema/*.schema.ts',
+  schema: './dist/schema/*.schema.js',
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {

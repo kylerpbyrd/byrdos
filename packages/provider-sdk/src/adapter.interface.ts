@@ -3,9 +3,11 @@ import type {
   LinkToken,
   LinkCallback,
   ProviderConnection,
+  ExchangeResult,
   ProviderAccount,
   ProviderBalance,
   ProviderTransaction,
+  TransactionBatch,
   SyncCursor,
   DateRange,
   RawWebhook,
@@ -24,8 +26,8 @@ export interface IProviderAdapter {
   /** Initiate a bank linking session. Returns a token for the frontend Link SDK. */
   initiateLink(userId: string, returnUri: string): Promise<LinkToken>;
 
-  /** Exchange a public token (from frontend Link completion) for a permanent connection. */
-  exchangePublicToken(payload: LinkCallback): Promise<ProviderConnection>;
+  /** Exchange a public token (from frontend Link completion) for a permanent connection + access token. */
+  exchangePublicToken(payload: LinkCallback): Promise<ExchangeResult>;
 
   /** Refresh credentials if they've expired (for OAuth-based providers). */
   refreshCredentials(connection: ProviderConnection): Promise<ProviderConnection>;
@@ -39,12 +41,12 @@ export interface IProviderAdapter {
     accountExternalIds?: string[],
   ): Promise<ProviderBalance[]>;
 
-  /** Stream transactions paginated via cursor. Returns an async iterable. */
+  /** Stream transaction batches paginated via cursor. Each batch carries added/modified/removed + the next cursor. */
   listTransactions(
     connection: ProviderConnection,
     cursor: SyncCursor,
     range: DateRange,
-  ): AsyncIterable<ProviderTransaction>;
+  ): AsyncIterable<TransactionBatch>;
 
   /** Revoke a connection (permanently remove provider access). */
   revoke(connection: ProviderConnection): Promise<void>;

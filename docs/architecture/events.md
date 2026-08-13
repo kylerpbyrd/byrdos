@@ -116,6 +116,15 @@ export class OutboxRelayWorker {
 }
 ```
 
+### Deferred capabilities (RFC-0001)
+
+The following queues and workers are scaffolded but deferred until a concrete consumer exists. The re-entry gate for each is: define the consumer, event shape, retry policy, and SLO before wiring.
+
+- `classify` queue — category classification (v3 AI feature).
+- `notifications` queue — no notification consumer exists.
+- `sync.dead` dead-letter queue — alerting only; no DLQ-move logic yet.
+- `outbox` queue / `services/outbox-relay` — no event producer writes to `eventLog` yet, so the relay polls but is inert.
+
 ## Schema versioning
 
 Events carry a `version` field. Consumers must handle versions they understand and ignore unknown versions.

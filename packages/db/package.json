@@ -11,9 +11,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "tsc -p tsconfig.build.json && drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:push": "tsc -p tsconfig.build.json && drizzle-kit push"
   },
   "exports": {
     ".": {

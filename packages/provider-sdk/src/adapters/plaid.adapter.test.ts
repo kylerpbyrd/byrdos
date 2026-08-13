@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   mockPlaidLinkToken,
   mockPlaidAccessToken,
@@ -9,7 +9,7 @@ import {
 } from '@byrdos/test-utils';
 import { PlaidAdapter } from './plaid.adapter.js';
 import { ProviderError } from '../errors.js';
-import type { ProviderConnection, RawWebhook, SyncCursor } from '@byrdos/contracts';
+import type { ProviderConnection, RawWebhook, SyncCursor, TransactionBatch } from '@byrdos/contracts';
 
 const mockPlaidApi = {
   linkTokenCreate: vi.fn(),
@@ -79,6 +79,38 @@ describe('PlaidAdapter', () => {
     adapter = createAdapter();
   });
 
+  afterEach(() => {
+    delete process.env.PLAID_ALLOW_PRODUCTION;
+  });
+
+  describe('constructor', () => {
+    it('should refuse to start in production without PLAID_ALLOW_PRODUCTION=true', () => {
+      process.env.PLAID_ALLOW_PRODUCTION = 'false';
+      expect(
+        () =>
+          new PlaidAdapter({
+            clientId: 'test',
+            secret: 'test',
+            environment: 'production',
+            webhookVerificationKey: 'test-key',
+          }),
+      ).toThrow('PlaidAdapter refused to start in production');
+    });
+
+    it('should allow production when PLAID_ALLOW_PRODUCTION=true', () => {
+      process.env.PLAID_ALLOW_PRODUCTION = 'true';
+      expect(
+        () =>
+          new PlaidAdapter({
+            clientId: 'test',
+            secret: 'test',
+            environment: 'production',
+            webhookVerificationKey: 'test-key',
+          }),
+      ).not.toThrow();
+    });
+  });
+
   describe('initiateLink', () => {
     it('should return link token with correct shape', async () => {
       mockPlaidApi.linkTokenCreate.mockResolvedValueOnce({ data: mockPlaidLinkToken });
@@ -141,10 +173,11 @@ describe('PlaidAdapter', () => {
         },
       });
 
-      expect(result.externalId).toBe(mockPlaidItemId);
-      expect(result.providerId).toBe('plaid');
-      expect(result.institutionName).toBe('Test Bank');
-      expect(result.status).toBe('active');
+      expect(result.accessToken).toBe(mockPlaidAccessToken);
+      expect(result.connection.externalId).toBe(mockPlaidItemId);
+      expect(result.connection.providerId).toBe('plaid');
+      expect(result.connection.institutionName).toBe('Test Bank');
+      expect(result.connection.status).toBe('active');
       expect(mockPlaidApi.itemPublicTokenExchange).toHaveBeenCalledWith({
         public_token: 'public-token-123',
       });
@@ -303,13 +336,13 @@ describe('PlaidAdapter', () => {
       });
     });
 
-    it('should yield transactions from paginated Plaid responses', async () => {
+    it('should yield transaction batches from paginated Plaid responses', async () => {
       mockPlaidApi.transactionsSync
         .mockResolvedValueOnce({
           data: {
             added: [createMockPlaidTransaction({ transaction_id: 'txn-1', amount: -10.0 })],
-            modified: [],
-            removed: [],
+            modified: [createMockPlaidTransaction({ transaction_id: 'txn-mod', amount: 5.5 })],
+            removed: [{ transaction_id: 'txn-del' }],
             next_cursor: 'cursor-2',
             has_more: true,
           },
@@ -330,15 +363,25 @@ describe('PlaidAdapter', () => {
         updatedAt: '2026-01-01T00:00:00Z',
       };
 
-      const txns: Array<{ externalId: string; amount: number }> = [];
-      for await (const txn of adapter.listTransactions(createConnection(mockPlaidAccessToken), cursor, { start: '2026-01-01', end: '2026-12-31' })) {
-        txns.push({ externalId: txn.externalId, amount: txn.amount });
+      const batches: TransactionBatch[] = [];
+      for await (const batch of adapter.listTransactions(createConnection(mockPlaidAccessToken), cursor, { start: '2026-01-01', end: '2026-12-31' })) {
+        batches.push(batch);
       }
 
-      expect(txns).toEqual([
-        { externalId: 'txn-1', amount: -1000 },
-        { externalId: 'txn-2', amount: 2000 },
-      ]);
+      expect(batches).toHaveLength(2);
+
+      expect(batches[0].added[0]).toMatchObject({ externalId: 'txn-1', amount: -1000 });
+      expect(batches[0].modified[0]).toMatchObject({ externalId: 'txn-mod', amount: 550 });
+      expect(batches[0].removed).toEqual(['txn-del']);
+      expect(batches[0].nextCursor).toBe('cursor-2');
+      expect(batches[0].hasMore).toBe(true);
+
+      expect(batches[1].added[0]).toMatchObject({ externalId: 'txn-2', amount: 2000 });
+      expect(batches[1].modified).toHaveLength(0);
+      expect(batches[1].removed).toHaveLength(0);
+      expect(batches[1].nextCursor).toBe('cursor-3');
+      expect(batches[1].hasMore).toBe(false);
+
       expect(mockPlaidApi.transactionsSync).toHaveBeenCalledTimes(2);
       expect(mockPlaidApi.transactionsSync).toHaveBeenLastCalledWith({
         access_token: mockPlaidAccessToken,
@@ -349,9 +392,9 @@ describe('PlaidAdapter', () => {
     it('should stop when has_more is false', async () => {
       mockPlaidApi.transactionsSync.mockResolvedValueOnce({
         data: {
-          added: [createMockPlaidTransaction({ transaction_id: 'txn-1' })],
+          added: [],
           modified: [],
-          removed: [],
+          removed: [{ transaction_id: 'txn-del' }],
           next_cursor: 'cursor-final',
           has_more: false,
         },
@@ -363,12 +406,19 @@ describe('PlaidAdapter', () => {
         updatedAt: '2026-01-01T00:00:00Z',
       };
 
-      const txns = [];
-      for await (const txn of adapter.listTransactions(createConnection(mockPlaidAccessToken), cursor, { start: '2026-01-01', end: '2026-12-31' })) {
-        txns.push(txn);
+      const batches: TransactionBatch[] = [];
+      for await (const batch of adapter.listTransactions(createConnection(mockPlaidAccessToken), cursor, { start: '2026-01-01', end: '2026-12-31' })) {
+        batches.push(batch);
       }
 
-      expect(txns).toHaveLength(1);
+      expect(batches).toHaveLength(1);
+      expect(batches[0]).toMatchObject({
+        added: [],
+        modified: [],
+        removed: ['txn-del'],
+        nextCursor: 'cursor-final',
+        hasMore: false,
+      });
       expect(mockPlaidApi.transactionsSync).toHaveBeenCalledTimes(1);
     });
 

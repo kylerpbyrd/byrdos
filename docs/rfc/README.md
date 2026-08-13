@@ -75,7 +75,7 @@ This table should be updated when new RFCs are proposed.
 
 | RFC | Promoted to ADR | Date | Rationale |
 |---|---|---|---|
-| — | — | — | — |
+| RFC-0001 | ADR-0011 | 2026-08-13 | P0/P1 sync pipeline repairs approved by user |
 
 ## 6. Rejected RFCs
 

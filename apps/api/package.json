@@ -4,12 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json && node --watch dist/main.js",
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json && node --watch dist/main.js",
     "lint": "eslint .",
     "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"No tests yet\""
+    "test": "vitest run",
+    "test:e2e-live": "pnpm run build && cd ../../services/sync-worker && pnpm run build && cd ../../apps/api && vitest run e2e/connect-sync-display.e2e.ts"
   },
   "dependencies": {
     "@byrdos/auth": "workspace:*",
@@ -42,6 +43,7 @@
     "@types/node": "^20.17.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/uuid": "^10.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
   }
 }

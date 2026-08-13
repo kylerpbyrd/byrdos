@@ -6,9 +6,10 @@ import { PlaidAdapter } from '@byrdos/provider-sdk';
 import { CredentialService } from '@byrdos/auth';
 import { v7 as uuidv7 } from 'uuid';
 import type { ProviderConnection } from '@byrdos/contracts';
+import { markSyncJobFailed } from '../sync-job-status.js';
 
 export function createAccountsWorker(): Worker<AccountsJobData> {
-  return new Worker<AccountsJobData>(
+  const worker = new Worker<AccountsJobData>(
     QUEUES.ACCOUNTS,
     async (job) => {
       const { syncJobId, connectionId, integrationId } = job.data;
@@ -107,4 +108,13 @@ export function createAccountsWorker(): Worker<AccountsJobData> {
     },
     { connection, concurrency: 5 },
   );
+
+  worker.on('failed', (job, err) => {
+    if (!job) return;
+    if (job.attemptsMade >= (job.opts.attempts ?? 1) - 1) {
+      void markSyncJobFailed(job.data.syncJobId, err.message);
+    }
+  });
+
+  return worker;
 }

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, varchar, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, varchar, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { integrations } from './integration.schema.js';
 
 export const providerConnections = pgTable(
@@ -14,5 +14,8 @@ export const providerConnections = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('provider_connections_integration_id_idx').on(table.integrationId)],
+  (table) => [
+    index('provider_connections_integration_id_idx').on(table.integrationId),
+    uniqueIndex('provider_connections_integration_external_id_idx').on(table.integrationId, table.externalId),
+  ],
 );

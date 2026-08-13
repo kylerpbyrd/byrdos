@@ -91,6 +91,7 @@ export class IntegrationsController {
     return this.integrationService.exchangeToken(
       body.integrationId,
       body.publicToken,
+      req.user.userId,
       body.metadata as LinkMetadata,
     );
   }

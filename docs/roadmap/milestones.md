@@ -24,7 +24,8 @@ flowchart LR
         M2 --> M3["M3 Sync Pipeline<br/>2w"]
         M3 --> M4["M4 API & Read Models<br/>1w"]
         M4 --> M4P5["M4.5 Hardening & Integration<br/>0.5w"]
-        M4P5 --> M5["M5 Dashboard Frontend<br/>2w"]
+        M4P5 --> M4P6["M4.6 Sync Slice Repair<br/>1w"]
+        M4P6 --> M5["M5 Dashboard Frontend<br/>2w"]
         M5 --> M6["M6 Observability, Hardening, Prod<br/>1.5w"]
     end
 
@@ -293,6 +294,37 @@ constraints, `SyncController` queries db directly. Ready for M5 frontend develop
 
 ---
 
+## M4.6 — Connect→Sync→Display Repair
+
+| Field | Value |
+|---|---|
+| **Duration** | 1 week |
+| **Objective** | Repair the connect → sync → display vertical slice so it works end-to-end against Plaid sandbox. |
+| **Dependencies** | M4.5 |
+| **Estimated Complexity** | High |
+| **Responsible Agent** | Backend + API + Testing (+ DevOps + Documentation) |
+
+### Deliverables
+
+- Fail-closed Plaid production guard.
+- Real token exchange with per-user authorization (IDOR fix).
+- Sync-queue consumer (orchestrator as Worker) with accounts→transactions ordering.
+- Incremental cursor + transaction update/removal semantics.
+- One end-to-end Plaid sandbox test.
+- DB integrity (UNIQUE constraints + transactions).
+- Graphify hygiene.
+
+### Acceptance Criteria
+
+- `POST /links/exchange` stores a real encrypted Plaid access token and rejects cross-user integration IDs with 403.
+- Enqueuing a sync job on the `sync` queue results in accounts then transactions landing in the DB.
+- A repeat sync does not duplicate transactions and updates/removes reflected.
+- Sync status transitions to `completed`.
+- Full typecheck + targeted tests green.
+- `PLAID_ENV=production` without `PLAID_ALLOW_PRODUCTION=true` refuses to start.
+
+---
+
 ## M5 — Dashboard Frontend
 
 | Field | Value |
@@ -404,7 +436,8 @@ gantt
     M3 Sync Pipeline            :m3, after m2, 14d
     M4 API & Read Models        :m4, after m3, 7d
     M4.5 Hardening & Integration :m4p5, after m4, 4d
-    M5 Dashboard Frontend       :m5, after m4p5, 14d
+    M4.6 Sync Slice Repair      :m4p6, after m4p5, 7d
+    M5 Dashboard Frontend       :m5, after m4p6, 14d
     M6 Hardening + Prod         :m6, after m5, 11d
 
     section Parallel
@@ -420,10 +453,11 @@ gantt
 | M0 — Foundation | ✅ Complete | 2026-07-13 | 2026-07-20 | DevOps + Architect |
 | M1 — Identity & Auth | ✅ Complete | 2026-07-20 | 2026-07-20 | Security + Frontend + Backend |
 | M2 — Provider Abstraction + Plaid | ✅ Complete | 2026-07-20 | 2026-07-20 | API + Security + Backend |
-| M3 — Sync Pipeline | ✅ Complete | 2026-07-20 | 2026-07-20 | Backend + API + Testing |
-| M4 — API & Read Models | ✅ Complete | 2026-07-20 | 2026-07-21 | Backend + API |
+| M3 — Sync Pipeline | ⚠️ Partial | 2026-07-20 | 2026-07-20 | Backend + API + Testing |
+| M4 — API & Read Models | ⚠️ Partial | 2026-07-20 | 2026-07-21 | Backend + API |
 | M4.5 — Hardening & Integration | ✅ Complete | 2026-07-21 | 2026-07-21 | Documentation + API + Architect |
-| M5 — Dashboard Frontend | 🔜 Planned | — | — | Frontend + Testing |
+| M4.6 — Connect→Sync→Display Repair | 🚧 In Progress | — | — | Backend + API + Testing |
+| M5 — Dashboard Frontend | ⏸️ Blocked | — | — | Frontend + Testing |
 | M6 — Observability, Hardening, Prod | 🔜 Planned | — | — | DevOps + Security + Backend |
 
 ---
@@ -438,6 +472,7 @@ gantt
 | M3 — Sync Pipeline | 2 weeks | High |
 | M4 — API & Read Models | 1 week | Medium |
 | M4.5 — Hardening & Integration | 0.5 week | Low-Medium |
+| M4.6 — Connect→Sync→Display Repair | 1 week | High |
 | M5 — Dashboard Frontend | 2 weeks | High |
 | M6 — Observability, Hardening, Prod | 1.5 weeks | Medium-High |
 | **Total** | **~10.5 weeks elapsed** | — |
