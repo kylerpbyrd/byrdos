@@ -96,7 +96,7 @@ All components built on Radix primitives via shadcn/ui, styled with Tailwind v4 
 
 | Component | Props | Description |
 |---|---|---|
-| `Money` | `amount: number, currency?: string, sign?: boolean` | Formatted currency display; mono font; red for negative; tabular alignment |
+| `Money` | `cents: number, currency?: string, sign?: boolean` | Formatted currency display; mono font; red for negative; tabular alignment |
 | `AccountBadge` | `account: { type, subtype, mask, name }` | Account type icon + masked number + name |
 | `ProviderIcon` | `providerId: ProviderId` | Provider logo (Plaid, MX, etc.) |
 | `SyncStatusBar` | `connectionId: string` | Sync progress bar; states: idle, syncing, error, reauth-required |
