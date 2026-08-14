@@ -1,8 +1,10 @@
 import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { Public } from '../auth/public.decorator.js';
 import { HealthService } from './health.service.js';
 
+@SkipThrottle()
 @Public()
 @Controller('health')
 export class HealthController {

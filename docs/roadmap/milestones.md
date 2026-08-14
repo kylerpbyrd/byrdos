@@ -413,6 +413,10 @@ constraints, `SyncController` queries db directly. Ready for M5 frontend develop
 - `.github/workflows/deploy.yml`
 - Infrastructure configuration files
 
+### Completion Notes
+
+M6 governance artifacts initiated: SLO ADR, production migration runbook, and milestone status tracking updated.
+
 ---
 
 ## Critical Path
@@ -458,7 +462,7 @@ gantt
 | M4.5 — Hardening & Integration | ✅ Complete | 2026-07-21 | 2026-07-21 | Documentation + API + Architect |
 | M4.6 — Connect→Sync→Display Repair | 🚧 In Progress | — | — | Backend + API + Testing |
 | M5 — Dashboard Frontend | ⏸️ Blocked | — | — | Frontend + Testing |
-| M6 — Observability, Hardening, Prod | 🔜 Planned | — | — | DevOps + Security + Backend |
+| M6 — Observability, Hardening, Prod | 🚧 In Progress | — | — | DevOps + Security + Backend |
 
 ---
 

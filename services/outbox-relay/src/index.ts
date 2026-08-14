@@ -1,8 +1,11 @@
 import { Redis } from 'ioredis';
 import { Queue } from 'bullmq';
+import { createLogger } from '@byrdos/observability';
 import { QUEUES } from '@byrdos/queue';
 import { db, eventLog } from '@byrdos/db';
 import { eq, and, asc } from 'drizzle-orm';
+
+const logger = createLogger('outbox-relay');
 
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
@@ -10,7 +13,7 @@ async function main() {
   const connection = new Redis(redisUrl, { maxRetriesPerRequest: null });
   const outboxQueue = new Queue(QUEUES.OUTBOX, { connection });
 
-  console.log('[outbox-relay] Polling for pending events...');
+  logger.info('[outbox-relay] Polling for pending events...');
 
   // Poll every 5 seconds for pending events
   setInterval(async () => {
@@ -44,11 +47,11 @@ async function main() {
           .where(eq(eventLog.id, event.id));
       }
     } catch (err) {
-      console.error('[outbox-relay] Error polling events:', err);
+      logger.error(err, '[outbox-relay] Error polling events:');
     }
   }, 5000);
 
-  console.log('[outbox-relay] Running — press Ctrl+C to stop');
+  logger.info('[outbox-relay] Running — press Ctrl+C to stop');
 }
 
-main().catch(console.error);
+main().catch((err) => logger.error(err));

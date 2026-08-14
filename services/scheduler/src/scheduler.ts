@@ -1,8 +1,11 @@
 import { Queue } from 'bullmq';
 import { eq } from 'drizzle-orm';
+import { createLogger } from '@byrdos/observability';
 import { db, integrations, providerConnections } from '@byrdos/db';
 import { QUEUES, type SyncJobData } from '@byrdos/queue';
 import { connection } from './redis.js';
+
+const logger = createLogger('scheduler');
 
 export class Scheduler {
   private syncQueue: Queue<SyncJobData>;
@@ -61,7 +64,7 @@ export class Scheduler {
     const waiting = await deadQueue.getWaitingCount();
 
     if (waiting > 0) {
-      console.warn(`[ALERT] ${waiting} jobs stuck in dead-letter queue`);
+      logger.warn(`[ALERT] ${waiting} jobs stuck in dead-letter queue`);
       // In production: emit to monitoring/alerting system
     }
   }

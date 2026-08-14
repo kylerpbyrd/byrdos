@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@byrdos/db": "workspace:*",
+    "@byrdos/observability": "workspace:*",
     "@byrdos/queue": "workspace:*",
     "@byrdos/contracts": "workspace:*",
     "bullmq": "^5.0.0",

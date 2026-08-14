@@ -1,15 +1,18 @@
+import { createLogger } from '@byrdos/observability';
 import { createWebhookWorker } from './webhook.processor.js';
 
+const logger = createLogger('webhook-worker');
+
 async function main() {
-  console.log('Starting webhook worker...');
+  logger.info('Starting webhook worker...');
   const worker = createWebhookWorker();
-  console.log(`Webhook worker: ${worker.name}`);
+  logger.info(`Webhook worker: ${worker.name}`);
 
   process.on('SIGTERM', async () => {
-    console.log('Shutting down...');
+    logger.info('Shutting down...');
     await worker.close();
     process.exit(0);
   });
 }
 
-main().catch(console.error);
+main().catch((err) => logger.error(err));
