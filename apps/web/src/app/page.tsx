@@ -8,30 +8,21 @@ import {
   type LinkListItem,
 } from '@/lib/api';
 import { SyncStatusClient } from '@/components/sync-status-client';
+import { RecentTransactions } from '@/components/recent-transactions';
 import {
   AccountBadge,
-  Badge,
   Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  DataTable,
   EmptyState,
   Money,
   ProviderIcon,
   SyncStatusBar,
 } from '@byrdos/ui';
-import type { Transaction } from '@byrdos/domain';
 import { ArrowRight, Plus } from 'lucide-react';
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
-}
 
 function getProviderStatus(integrations: LinkListItem[]): 'success' | 'error' | 'idle' {
   if (integrations.length === 0) return 'idle';
@@ -88,38 +79,6 @@ export default async function HomePage() {
       </div>
     );
   }
-
-  const transactionColumns: import('@byrdos/ui').DataTableColumn<Transaction>[] = [
-    {
-      key: 'name',
-      header: 'Transaction',
-      cell: (t) => (
-        <div className="min-w-0">
-          <p className="truncate font-medium text-foreground">{t.name}</p>
-          <p className="text-xs text-muted">
-            {formatDate(t.date)}
-            {t.merchantName && t.merchantName !== t.name && ` • ${t.merchantName}`}
-          </p>
-        </div>
-      ),
-    },
-    {
-      key: 'amount',
-      header: 'Amount',
-      cell: (t) => (
-        <div className="text-right">
-          <Money cents={t.amountCents} currency={t.isoCurrencyCode ?? 'USD'} sign />
-          {t.pending && (
-            <Badge variant="warning" className="ml-2">
-              Pending
-            </Badge>
-          )}
-        </div>
-      ),
-      className: 'text-right',
-      headerClassName: 'text-right',
-    },
-  ];
 
   return (
     <div className="min-h-[calc(100vh-56px)] bg-background p-4 md:min-h-screen md:p-8">
@@ -200,18 +159,7 @@ export default async function HomePage() {
             </Button>
           </div>
           <Card>
-            <DataTable
-              columns={transactionColumns}
-              data={transactions}
-              keyExtractor={(t) => t.id}
-              emptyState={
-                <EmptyState
-                  icon={<ArrowRight className="size-6" />}
-                  title="No transactions yet"
-                  description="Transactions will appear here after your first sync."
-                />
-              }
-            />
+            <RecentTransactions transactions={transactions} />
           </Card>
         </section>
 
