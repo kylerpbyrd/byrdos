@@ -9,7 +9,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard.js';
-import { IntegrationService, type LinkMetadata } from './integration.service.js';
+import { IntegrationService, type LinkListItem, type LinkMetadata } from './integration.service.js';
 import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import {
   initiateLinkBodySchema,
@@ -98,11 +98,16 @@ export class IntegrationsController {
 
   @Get()
   @ApiOperation({ summary: 'List provider links for the authenticated user' })
-  @ApiResponse({ status: 200, description: 'List of integrations', type: Object, isArray: true })
+  @ApiResponse({
+    status: 200,
+    description: 'List of integrations with their provider connection',
+    type: Object,
+    isArray: true,
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 500, description: 'Internal server error' })
-  async list(@Req() req: AuthRequest) {
+  async list(@Req() req: AuthRequest): Promise<LinkListItem[]> {
     return this.integrationService.listIntegrations(req.user.userId);
   }
 

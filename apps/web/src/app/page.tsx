@@ -1,7 +1,13 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { fetchAccounts, fetchTransactions, listIntegrations } from '@/lib/api';
+import {
+  fetchAccounts,
+  fetchTransactions,
+  listIntegrations,
+  type LinkListItem,
+} from '@/lib/api';
+import { SyncStatusClient } from '@/components/sync-status-client';
 import {
   AccountBadge,
   Badge,
@@ -27,11 +33,17 @@ function formatDate(date: string): string {
   });
 }
 
-function getProviderStatus(integrations: unknown[]): 'success' | 'error' | 'idle' {
+function getProviderStatus(integrations: LinkListItem[]): 'success' | 'error' | 'idle' {
   if (integrations.length === 0) return 'idle';
-  const statuses = integrations.map((i) => (i as { status?: string }).status);
-  if (statuses.some((s) => s === 'error' || s === 'pending_reconnect')) return 'error';
-  return 'success';
+  if (
+    integrations.some(
+      (i) =>
+        i.connection?.status === 'error' || i.connection?.status === 'pending_reconnect',
+    )
+  )
+    return 'error';
+  if (integrations.some((i) => i.connection?.status === 'active')) return 'success';
+  return 'idle';
 }
 
 export default async function HomePage() {
@@ -208,34 +220,39 @@ export default async function HomePage() {
             <h2 className="mb-3 text-lg font-semibold text-foreground">Connected providers</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {integrations.map((integration) => {
-                const i = integration as {
-                  id: string;
-                  providerId: string;
-                  institutionName: string | null;
-                  status: string;
-                };
-                const status: import('@byrdos/ui').SyncStatus =
-                  i.status === 'active'
+                const conn = integration.connection;
+                const status = conn
+                  ? conn.status === 'active'
                     ? 'success'
-                    : i.status === 'pending_reconnect'
+                    : conn.status === 'pending_reconnect' || conn.status === 'error'
                       ? 'error'
-                      : 'idle';
+                      : 'idle'
+                  : 'idle';
                 return (
-                  <Card key={i.id}>
+                  <Card key={integration.id}>
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-3">
                         <ProviderIcon
-                          providerId={i.providerId as 'plaid' | 'mx' | 'akoya'}
+                          providerId={integration.providerId as 'plaid' | 'mx' | 'akoya'}
                           className="size-8"
                         />
                         <div>
-                          <CardTitle className="text-base">{i.institutionName || i.providerId}</CardTitle>
-                          <CardDescription className="capitalize">{i.providerId}</CardDescription>
+                          <CardTitle className="text-base">
+                            {conn?.institutionName ?? integration.providerId}
+                          </CardTitle>
+                          <CardDescription className="capitalize">{integration.providerId}</CardDescription>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <SyncStatusBar status={status} />
+                      {conn ? (
+                        <SyncStatusClient connectionId={conn.id} token={token} />
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm text-muted">
+                          <SyncStatusBar status={status} />
+                          <span>Not connected</span>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );

@@ -1,6 +1,12 @@
 export { QueryProvider, type QueryProviderProps } from './query-provider.js';
 export { Money, type MoneyProps } from './money.js';
-export { SyncStatusBar, type SyncStatusBarProps, type SyncStatus } from './sync-status.js';
+export {
+  SyncStatusBar,
+  type SyncStatusBarProps,
+  type SyncStatus,
+  type SyncStatusResponse,
+  type SyncJob,
+} from './sync-status.js';
 
 // shadcn primitives
 export { Button, buttonVariants, type ButtonProps } from './components/button.js';

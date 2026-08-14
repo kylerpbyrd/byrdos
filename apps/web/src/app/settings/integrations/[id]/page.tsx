@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth';
 import { redirect, notFound } from 'next/navigation';
-import { fetchAccounts, fetchIntegration } from '@/lib/api';
+import { fetchAccounts, fetchIntegration, type LinkListItem } from '@/lib/api';
 import { IntegrationDetailPageClient } from './integration-detail-client';
 
 interface IntegrationDetailPageProps {
@@ -19,33 +19,19 @@ export default async function IntegrationDetailPage({ params }: IntegrationDetai
   }
 
   const { id } = await params;
-  let integration: unknown;
+  let integration: LinkListItem;
   try {
     integration = await fetchIntegration(token, id);
   } catch {
     notFound();
   }
 
-  const i = integration as {
-    id: string;
-    providerId: string;
-    institutionName: string | null;
-    status: string;
-    externalId: string;
-  };
-
   const { items: accounts } = await fetchAccounts(token, { limit: 100 });
-  const connectedAccounts = accounts.filter((a) => a.connectionId === i.id);
+  const connectedAccounts = accounts.filter((a) => a.connectionId === integration.connection?.id);
 
   return (
     <IntegrationDetailPageClient
-      integration={{
-        id: i.id,
-        providerId: i.providerId,
-        institutionName: i.institutionName,
-        status: i.status,
-        externalId: i.externalId,
-      }}
+      integration={integration}
       accounts={connectedAccounts}
     />
   );

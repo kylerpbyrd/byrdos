@@ -12,6 +12,12 @@ import {
 } from '@byrdos/ui';
 import { ArrowLeft, ChevronRight, Plus } from 'lucide-react';
 
+function mapConnectionStatus(status: string | undefined): import('@byrdos/ui').SyncStatus {
+  if (status === 'active') return 'success';
+  if (status === 'pending_reconnect' || status === 'error') return 'error';
+  return 'idle';
+}
+
 export default async function IntegrationsPage() {
   const session = await auth();
   if (!session?.user) {
@@ -58,33 +64,23 @@ export default async function IntegrationsPage() {
             </Card>
           ) : (
             integrations.map((integration) => {
-              const i = integration as {
-                id: string;
-                providerId: string;
-                institutionName: string | null;
-                status: string;
-              };
-              const status: import('@byrdos/ui').SyncStatus =
-                i.status === 'active'
-                  ? 'success'
-                  : i.status === 'pending_reconnect'
-                    ? 'error'
-                    : 'idle';
-              const accountCount = accounts.filter((a) => a.connectionId === i.id).length;
+              const conn = integration.connection;
+              const status = mapConnectionStatus(conn?.status);
+              const accountCount = accounts.filter((a) => a.connectionId === conn?.id).length;
               return (
-                <Link key={i.id} href={`/settings/integrations/${i.id}`} className="group">
+                <Link key={integration.id} href={`/settings/integrations/${integration.id}`} className="group">
                   <Card className="transition-colors hover:border-primary/50 hover:bg-surface-elevated">
                     <CardContent className="flex items-center gap-4 p-4">
                       <ProviderIcon
-                        providerId={i.providerId as 'plaid' | 'mx' | 'akoya'}
+                        providerId={integration.providerId as 'plaid' | 'mx' | 'akoya'}
                         className="size-10"
                       />
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-foreground">
-                          {i.institutionName || i.providerId}
+                          {conn?.institutionName ?? integration.providerId}
                         </p>
                         <p className="text-sm capitalize text-muted">
-                          {i.providerId} • {accountCount} account
+                          {integration.providerId} • {accountCount} account
                           {accountCount === 1 ? '' : 's'}
                         </p>
                       </div>

@@ -16,6 +16,15 @@ export interface LinkMetadata {
   accounts?: { id: string; name: string; mask?: string; type: string; subtype?: string }[];
 }
 
+export interface LinkListItem {
+  id: string;
+  providerId: string;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+  connection: ProviderConnection | null;
+}
+
 @Injectable()
 export class IntegrationService {
   constructor(
@@ -73,8 +82,21 @@ export class IntegrationService {
     return connection;
   }
 
-  async listIntegrations(userId: string): Promise<Integration[]> {
-    return this.integrationRepo.findByUserId(userId);
+  async listIntegrations(userId: string): Promise<LinkListItem[]> {
+    const integrations = await this.integrationRepo.findByUserId(userId);
+    return Promise.all(
+      integrations.map(async (integration) => {
+        const connections = await this.connectionRepo.findByIntegrationId(integration.id);
+        return {
+          id: integration.id,
+          providerId: integration.providerId,
+          status: integration.status,
+          createdAt: integration.createdAt,
+          updatedAt: integration.updatedAt,
+          connection: connections[0] ?? null,
+        };
+      }),
+    );
   }
 
   async getConnection(connectionId: string): Promise<ProviderConnection> {

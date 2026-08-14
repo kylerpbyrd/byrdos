@@ -17,19 +17,13 @@ import {
   SyncStatusBar,
 } from '@byrdos/ui';
 import { PlaidLinkButton } from '@/components/plaid-link-button';
-import { revokeConnection } from '@/lib/api';
+import { revokeConnection, type LinkListItem } from '@/lib/api';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft, RefreshCw, Unlink } from 'lucide-react';
 import type { Account } from '@byrdos/domain';
 
 interface IntegrationDetailPageClientProps {
-  integration: {
-    id: string;
-    providerId: string;
-    institutionName: string | null;
-    status: string;
-    externalId: string;
-  };
+  integration: LinkListItem;
   accounts: Account[];
 }
 
@@ -43,23 +37,28 @@ export function IntegrationDetailPageClient({
   const [error, setError] = useState<string | null>(null);
 
   const token = session?.accessToken;
+  const conn = integration.connection;
   const status: import('@byrdos/ui').SyncStatus =
-    integration.status === 'active'
+    conn?.status === 'active'
       ? 'success'
-      : integration.status === 'pending_reconnect'
+      : conn?.status === 'pending_reconnect' || conn?.status === 'error'
         ? 'error'
         : 'idle';
-  const needsRelink = integration.status === 'pending_reconnect';
+  const needsRelink = conn?.status === 'pending_reconnect';
 
   const handleRevoke = async () => {
     if (!token) {
       setError('Not authenticated');
       return;
     }
+    if (!conn?.id) {
+      setError('No connection to disconnect');
+      return;
+    }
     setRevoking(true);
     setError(null);
     try {
-      await revokeConnection(integration.id, token);
+      await revokeConnection(conn.id, token);
       router.push('/settings/integrations');
       router.refresh();
     } catch (err) {
@@ -88,7 +87,7 @@ export function IntegrationDetailPageClient({
               />
               <div>
                 <CardTitle className="text-xl">
-                  {integration.institutionName || integration.providerId}
+                  {conn?.institutionName ?? integration.providerId}
                 </CardTitle>
                 <CardDescription className="capitalize">
                   {integration.providerId} connection

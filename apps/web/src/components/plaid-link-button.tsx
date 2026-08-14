@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { usePlaidLink, type PlaidLinkOnSuccessMetadata } from 'react-plaid-link';
 import { initiateLink, exchangeLinkToken } from '@/lib/api';
 import { Button } from '@byrdos/ui';
@@ -14,6 +15,7 @@ interface PlaidLinkButtonProps {
 
 export function PlaidLinkButton({ onSuccess, onExit, children }: PlaidLinkButtonProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const token = session?.accessToken;
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,11 +37,12 @@ export function PlaidLinkButton({ onSuccess, onExit, children }: PlaidLinkButton
         sessionStorage.removeItem('pendingIntegrationId');
         setLinkToken(null);
         onSuccess?.();
+        router.push('/');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to link account');
       }
     },
-    [onSuccess, token],
+    [onSuccess, token, router],
   );
 
   const onPlaidExit = useCallback(() => {

@@ -69,6 +69,51 @@ interface ExchangeLinkResponse {
   status: string;
 }
 
+export interface Connection {
+  id: string;
+  integrationId: string;
+  externalId: string;
+  institutionName: string | null;
+  status: string;
+  lastWebhookAt: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface Integration {
+  id: string;
+  providerId: string;
+  userId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  institutionName?: string | null;
+  externalId?: string;
+}
+
+export interface LinkListItem {
+  id: string;
+  providerId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  connection: Connection | null;
+}
+
+export interface SyncStatusResponse {
+  connectionId: string;
+  status: string;
+  lastWebhookAt: string | null;
+  recentJobs: {
+    id: string;
+    type: string;
+    status: string;
+    trigger: string;
+    createdAt: string;
+    finishedAt: string | null;
+  }[];
+}
+
 export async function initiateLink(
   providerId: string,
   token?: string,
@@ -93,16 +138,16 @@ export async function exchangeLinkToken(
   });
 }
 
-export async function listIntegrations(token?: string): Promise<unknown[]> {
+export async function listIntegrations(token?: string): Promise<LinkListItem[]> {
   try {
-    return await apiFetch<unknown[]>('/links', { token });
+    return await apiFetch<LinkListItem[]>('/links', { token });
   } catch {
     return [];
   }
 }
 
-export async function fetchIntegration(token: string, id: string): Promise<unknown> {
-  const result = await apiFetch<unknown | { error: string }>(`/links/${id}`, { token });
+export async function fetchIntegration(token: string, id: string): Promise<LinkListItem> {
+  const result = await apiFetch<LinkListItem | { error: string }>(`/links/${id}`, { token });
   if (result && typeof result === 'object' && 'error' in result) {
     throw new Error((result as { error: string }).error);
   }
@@ -111,6 +156,20 @@ export async function fetchIntegration(token: string, id: string): Promise<unkno
 
 export async function revokeConnection(connectionId: string, token?: string): Promise<void> {
   await apiFetch(`/links/${connectionId}`, { method: 'DELETE', token });
+}
+
+export async function triggerSync(
+  connectionId: string,
+  token: string,
+): Promise<{ success: boolean; message?: string }> {
+  return apiFetch(`/sync/${connectionId}`, { method: 'POST', token });
+}
+
+export async function fetchSyncStatus(
+  connectionId: string,
+  token: string,
+): Promise<SyncStatusResponse> {
+  return apiFetch(`/sync/${connectionId}`, { token });
 }
 
 export async function fetchAccounts(
