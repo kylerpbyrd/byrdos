@@ -24,7 +24,7 @@
 ## Deferred (documented, low priority)
 
 - `db.transaction()` wrapping for multi-table atomicity.
-- Graphify graph rebuild — **blocked**: Graphify runtime lacks `networkx`; product graph should exclude `.agents/**` + `graphify-out/**` (both already gitignored for the product graph).
+- Graphify **docs** semantic extraction — optional; needs `GEMINI_API_KEY` (the code graph is built locally via `--code-only`, no key required).
 
 ## Key facts / gotchas
 
@@ -34,7 +34,7 @@
 - Run stack: `pnpm dev` (API :4000, web :3000) plus the sync-worker. Services `start` runs compiled `dist` — rebuild after backend changes.
 - Test user (connected): `m5-live2@byrdos.test` / `Passw0rd!123`.
 - `drizzle-kit generate` reads compiled `dist/schema` (fixed the NodeNext `.js`-import bug); `db:generate`/`db:push` build first.
-- Graphify runtime is broken (no `networkx`) — work from source + docs instead.
+- Graphify works (v0.9.22 + `networkx`). `.graphifyignore` excludes `.agents/`. Rebuild: `python -m graphify extract . --code-only --force` (1,936 nodes). Query: `python -m graphify query "..."`.
 
 ## Next recommended starting point
 

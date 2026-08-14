@@ -1,0 +1,6 @@
+# Exclude agent tooling + local artifacts from the product knowledge graph.
+# Per ADR-0011 Decision 5: the product graph should model product architecture,
+# not committed agent-skill content or generated graph output.
+# (.gitignore already covers node_modules/, dist/, .next/, .turbo/, coverage/, graphify-out/.)
+.agents/
+.playwright-mcp/
