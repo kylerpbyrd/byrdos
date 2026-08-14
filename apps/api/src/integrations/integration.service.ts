@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { assertProviderId, type Integration, type ProviderConnection } from '@byrdos/domain';
+import { assertProviderId, type ProviderConnection } from '@byrdos/domain';
 import { ProviderRegistry } from '@byrdos/provider-sdk';
 import { CredentialService, encrypt, getKeyRing } from '@byrdos/auth';
 import type { ProviderConnection as ContractProviderConnection } from '@byrdos/contracts';
@@ -9,7 +9,7 @@ import type {
   DrizzleProviderConnectionRepository,
 } from '@byrdos/db';
 import { Queue } from 'bullmq';
-import { QUEUES, type SyncJobData } from '@byrdos/queue';
+import { type SyncJobData } from '@byrdos/queue';
 
 export interface LinkMetadata {
   institution?: { name: string; institution_id: string };

@@ -31,6 +31,13 @@ async function main() {
     await scheduler.checkDeadLetterQueue();
   }, 30 * 60 * 1000);
 
+  // Every 24 hours: raw payload retention purge
+  setInterval(async () => {
+    logger.info('Running retention purge...');
+    const purged = await scheduler.retentionPurge();
+    logger.info(`Purged raw payload for ${purged} transactions`);
+  }, 24 * 60 * 60 * 1000);
+
   process.on('SIGTERM', () => {
     logger.info('Scheduler shutting down...');
     process.exit(0);

@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq';
-import { eq } from 'drizzle-orm';
+import { eq, lt } from 'drizzle-orm';
 import { createLogger } from '@byrdos/observability';
-import { db, integrations, providerConnections } from '@byrdos/db';
+import { db, integrations, providerConnections, transactions } from '@byrdos/db';
 import { QUEUES, type SyncJobData } from '@byrdos/queue';
 import { connection } from './redis.js';
 
@@ -54,6 +54,22 @@ export class Scheduler {
    */
   async enqueueBalanceFastlane(): Promise<number> {
     return this.enqueueScheduledSyncs();
+  }
+
+  /**
+   * Null out heavy raw provider payloads older than 90 days.
+   * Returns the number of affected transaction rows.
+   */
+  async retentionPurge(): Promise<number> {
+    const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+
+    const updated = await db
+      .update(transactions)
+      .set({ raw: null })
+      .where(lt(transactions.createdAt, cutoff))
+      .returning({ id: transactions.id });
+
+    return updated.length;
   }
 
   /**
