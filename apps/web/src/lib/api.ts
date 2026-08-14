@@ -172,6 +172,29 @@ export async function fetchSyncStatus(
   return apiFetch(`/sync/${connectionId}`, { token });
 }
 
+export async function initiateReconnect(
+  connectionId: string,
+  token: string,
+): Promise<{ linkToken: string }> {
+  return apiFetch(`/links/${connectionId}/reconnect`, {
+    method: 'POST',
+    token,
+  });
+}
+
+export async function exchangeReconnect(
+  connectionId: string,
+  publicToken: string,
+  metadata: unknown,
+  token: string,
+): Promise<unknown> {
+  return apiFetch(`/links/${connectionId}/reconnect/exchange`, {
+    method: 'POST',
+    token,
+    body: JSON.stringify({ publicToken, metadata }),
+  });
+}
+
 export async function fetchAccounts(
   token: string,
   options?: { cursor?: string; limit?: number },

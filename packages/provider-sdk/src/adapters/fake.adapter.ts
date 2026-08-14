@@ -60,6 +60,14 @@ export class FakeProviderAdapter implements IProviderAdapter {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async initiateRelink(_connection: ProviderConnection): Promise<LinkToken> {
+    return {
+      token: 'fake-relink-token',
+      expiration: '2099-12-31T23:59:59Z',
+    };
+  }
+
   async exchangePublicToken(_payload: LinkCallback): Promise<ExchangeResult> {
     const connection: ProviderConnection = {
       id: '',

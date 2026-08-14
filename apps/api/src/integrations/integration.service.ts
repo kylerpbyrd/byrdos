@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { assertProviderId, type Integration, type ProviderConnection } from '@byrdos/domain';
 import { ProviderRegistry } from '@byrdos/provider-sdk';
-import { CredentialService } from '@byrdos/auth';
+import { CredentialService, encrypt, getKeyRing } from '@byrdos/auth';
 import type { ProviderConnection as ContractProviderConnection } from '@byrdos/contracts';
 import type {
   DrizzleIntegrationRepository,
@@ -80,6 +80,63 @@ export class IntegrationService {
     });
 
     return connection;
+  }
+
+  async exchangeReconnect(
+    connectionId: string,
+    publicToken: string,
+    userId: string,
+    metadata?: LinkMetadata,
+  ): Promise<ProviderConnection> {
+    const conn = await this.connectionRepo.findById(connectionId);
+    if (!conn) throw new NotFoundException('Connection not found');
+    const integration = await this.integrationRepo.findById(conn.integrationId);
+    if (!integration) throw new NotFoundException('Integration not found');
+    if (integration.userId !== userId) throw new ForbiddenException('Forbidden');
+
+    const adapter = this.registry.get(integration.providerId);
+    const result = await adapter.exchangePublicToken({ publicToken, metadata });
+
+    const credential = await this.credentialRepo.findByIntegrationId(conn.integrationId);
+    if (!credential) throw new NotFoundException('Credential not found');
+    const { cipher, keyId } = encrypt(result.accessToken, getKeyRing().get('v1')!);
+    await this.credentialRepo.updateCipher(credential.id, cipher, keyId);
+
+    await this.connectionRepo.updateStatus(connectionId, 'active');
+
+    await this.syncQueue.add(`relink-${connectionId}`, {
+      connectionId,
+      integrationId: conn.integrationId,
+      userId,
+      providerId: integration.providerId,
+      trigger: 'incremental',
+    });
+
+    return conn;
+  }
+
+  async initiateReconnect(
+    connectionId: string,
+    userId: string,
+  ): Promise<{ linkToken: string }> {
+    const conn = await this.connectionRepo.findById(connectionId);
+    if (!conn) throw new NotFoundException('Connection not found');
+    const integration = await this.integrationRepo.findById(conn.integrationId);
+    if (!integration) throw new NotFoundException('Integration not found');
+    if (integration.userId !== userId) throw new ForbiddenException('Forbidden');
+
+    const adapter = this.registry.get(integration.providerId);
+    const credential = await this.credentialRepo.findByIntegrationId(
+      conn.integrationId,
+    );
+    if (!credential) throw new NotFoundException('Credential not found');
+    const token = await this.credentialService.getToken(credential.id);
+    (conn as unknown as { __accessToken?: string }).__accessToken = token;
+
+    const linkToken = await adapter.initiateRelink(
+      conn as unknown as Parameters<typeof adapter.initiateRelink>[0],
+    );
+    return { linkToken: linkToken.token };
   }
 
   async listIntegrations(userId: string): Promise<LinkListItem[]> {

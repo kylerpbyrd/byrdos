@@ -26,6 +26,9 @@ export interface IProviderAdapter {
   /** Initiate a bank linking session. Returns a token for the frontend Link SDK. */
   initiateLink(userId: string, returnUri: string): Promise<LinkToken>;
 
+  /** Initiate a re-link (Link update mode) for an existing connection (e.g. ITEM_LOGIN_REQUIRED). */
+  initiateRelink(connection: ProviderConnection): Promise<LinkToken>;
+
   /** Exchange a public token (from frontend Link completion) for a permanent connection + access token. */
   exchangePublicToken(payload: LinkCallback): Promise<ExchangeResult>;
 

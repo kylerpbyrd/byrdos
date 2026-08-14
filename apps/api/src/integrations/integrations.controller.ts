@@ -14,8 +14,10 @@ import { ZodValidationPipe } from '../common/zod-validation.pipe.js';
 import {
   initiateLinkBodySchema,
   exchangeTokenBodySchema,
+  relinkExchangeBodySchema,
   type InitiateLinkBodyDto,
   type ExchangeTokenBodyDto,
+  type RelinkExchangeBodyDto,
 } from '../common/request-schemas.js';
 
 interface AuthRequest extends Request {
@@ -90,6 +92,58 @@ export class IntegrationsController {
   ) {
     return this.integrationService.exchangeToken(
       body.integrationId,
+      body.publicToken,
+      req.user.userId,
+      body.metadata as LinkMetadata,
+    );
+  }
+
+  @Post(':id/reconnect')
+  @ApiOperation({ summary: 'Generate a re-link token for update mode' })
+  @ApiParam({ name: 'id', description: 'Connection ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Re-link token',
+    schema: { properties: { linkToken: { type: 'string' } } },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Connection or credential not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async reconnect(@Req() req: AuthRequest, @Param('id') id: string) {
+    return this.integrationService.initiateReconnect(id, req.user.userId);
+  }
+
+  @Post(':id/reconnect/exchange')
+  @ApiOperation({ summary: 'Exchange a re-link public token and re-sync an existing connection' })
+  @ApiParam({ name: 'id', description: 'Connection ID' })
+  @ApiBody({
+    description: 'Re-link token exchange request',
+    schema: {
+      properties: {
+        publicToken: { type: 'string' },
+        metadata: { type: 'object' },
+      },
+      required: ['publicToken'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Updated provider connection',
+    type: Object,
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Connection, integration, or credential not found' })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
+  async exchangeReconnect(
+    @Req() req: AuthRequest,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(relinkExchangeBodySchema)) body: RelinkExchangeBodyDto,
+  ) {
+    return this.integrationService.exchangeReconnect(
+      id,
       body.publicToken,
       req.user.userId,
       body.metadata as LinkMetadata,

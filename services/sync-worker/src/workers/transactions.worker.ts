@@ -1,8 +1,15 @@
 import { Worker } from 'bullmq';
 import { connection } from '../redis.js';
 import { QUEUES, type TransactionsJobData } from '@byrdos/queue';
-import { db, transactions, syncCursors, accounts, DrizzleCredentialRepository } from '@byrdos/db';
-import { createProviderRegistry } from '@byrdos/provider-sdk';
+import {
+  db,
+  transactions,
+  syncCursors,
+  accounts,
+  providerConnections,
+  DrizzleCredentialRepository,
+} from '@byrdos/db';
+import { createProviderRegistry, ProviderError } from '@byrdos/provider-sdk';
 import { CredentialService } from '@byrdos/auth';
 import { v7 as uuidv7 } from 'uuid';
 import { eq, and, inArray, sql } from 'drizzle-orm';
@@ -60,18 +67,32 @@ export function createTransactionsWorker(): Worker<TransactionsJobData> {
         __accessToken: accessToken,
       };
 
-      const iterable = adapter.listTransactions(
-        connectionStub,
-        {
-          resourceType: 'transactions',
-          cursor: txnCursor?.cursor || '',
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          start: job.data.startDate || '2024-01-01',
-          end: new Date().toISOString().split('T')[0],
-        },
-      );
+      let iterable;
+      try {
+        iterable = adapter.listTransactions(
+          connectionStub,
+          {
+            resourceType: 'transactions',
+            cursor: txnCursor?.cursor || '',
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            start: job.data.startDate || '2024-01-01',
+            end: new Date().toISOString().split('T')[0],
+          },
+        );
+      } catch (err) {
+        if (
+          err instanceof ProviderError &&
+          err.code === 'reauth_required'
+        ) {
+          await db
+            .update(providerConnections)
+            .set({ status: 'pending_reconnect', updatedAt: new Date() })
+            .where(eq(providerConnections.id, connectionId));
+        }
+        throw err;
+      }
 
       for await (const batch of iterable) {
         const upsertTxns = [...batch.added, ...batch.modified];

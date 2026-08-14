@@ -148,6 +148,53 @@ describe('PlaidAdapter', () => {
     });
   });
 
+  describe('initiateRelink', () => {
+    it('should throw when access token is missing', async () => {
+      await expect(adapter.initiateRelink(createConnection())).rejects.toMatchObject({
+        code: 'invalid_request',
+        providerId: 'plaid',
+        message: 'Missing access token for connection',
+      });
+    });
+
+    it('should pass access_token to linkTokenCreate in update mode', async () => {
+      mockPlaidApi.linkTokenCreate.mockResolvedValueOnce({ data: mockPlaidLinkToken });
+
+      const connection = createConnection(mockPlaidAccessToken);
+      const result = await adapter.initiateRelink(connection);
+
+      expect(result).toEqual({
+        token: mockPlaidLinkToken.link_token,
+        expiration: mockPlaidLinkToken.expiration,
+      });
+      expect(mockPlaidApi.linkTokenCreate).toHaveBeenCalledWith({
+        user: { client_user_id: connection.id },
+        client_name: 'byrdOS',
+        products: ['transactions', 'auth'],
+        country_codes: ['US'],
+        language: 'en',
+        access_token: mockPlaidAccessToken,
+      });
+    });
+
+    it('should propagate Plaid errors', async () => {
+      mockPlaidApi.linkTokenCreate.mockRejectedValueOnce({
+        response: {
+          data: {
+            error_type: 'INVALID_REQUEST',
+            error_code: 'INVALID_ACCESS_TOKEN',
+            error_message: 'invalid access token',
+          },
+        },
+      });
+
+      await expect(adapter.initiateRelink(createConnection(mockPlaidAccessToken))).rejects.toMatchObject({
+        code: 'invalid_request',
+        providerId: 'plaid',
+      });
+    });
+  });
+
   describe('refreshCredentials', () => {
     it('should return the connection unchanged', async () => {
       const connection = createConnection(mockPlaidAccessToken);

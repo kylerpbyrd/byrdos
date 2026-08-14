@@ -90,6 +90,32 @@ export class PlaidAdapter implements IProviderAdapter {
     }
   }
 
+  async initiateRelink(connection: ProviderConnection): Promise<LinkToken> {
+    const accessToken = (connection as { __accessToken?: string }).__accessToken;
+    if (!accessToken) {
+      throw new ProviderError('invalid_request', 'Missing access token for connection', { providerId: 'plaid' });
+    }
+
+    try {
+      const request: LinkTokenCreateRequest = {
+        user: { client_user_id: connection.id },
+        client_name: 'byrdOS',
+        products: [Products.Transactions, Products.Auth],
+        country_codes: [CountryCode.Us],
+        language: 'en',
+        access_token: accessToken,
+      };
+
+      const response = await this.client.linkTokenCreate(request);
+      return {
+        token: response.data.link_token,
+        expiration: response.data.expiration,
+      };
+    } catch (error: unknown) {
+      throw this.mapError(error);
+    }
+  }
+
   async exchangePublicToken(payload: LinkCallback): Promise<ExchangeResult> {
     try {
       const request: ItemPublicTokenExchangeRequest = {

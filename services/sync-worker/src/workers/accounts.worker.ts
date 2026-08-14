@@ -1,10 +1,17 @@
 import { Worker } from 'bullmq';
 import { connection } from '../redis.js';
 import { QUEUES, type AccountsJobData } from '@byrdos/queue';
-import { db, accounts, balances, DrizzleCredentialRepository } from '@byrdos/db';
-import { createProviderRegistry } from '@byrdos/provider-sdk';
+import {
+  db,
+  accounts,
+  balances,
+  providerConnections,
+  DrizzleCredentialRepository,
+} from '@byrdos/db';
+import { createProviderRegistry, ProviderError } from '@byrdos/provider-sdk';
 import { CredentialService } from '@byrdos/auth';
 import { v7 as uuidv7 } from 'uuid';
+import { eq } from 'drizzle-orm';
 import type { ProviderConnection, ProviderId } from '@byrdos/contracts';
 import { markSyncJobFailed } from '../sync-job-status.js';
 
@@ -41,7 +48,21 @@ export function createAccountsWorker(): Worker<AccountsJobData> {
       };
 
       // Fetch accounts
-      const providerAccounts = await adapter.listAccounts(connectionStub);
+      let providerAccounts;
+      try {
+        providerAccounts = await adapter.listAccounts(connectionStub);
+      } catch (err) {
+        if (
+          err instanceof ProviderError &&
+          err.code === 'reauth_required'
+        ) {
+          await db
+            .update(providerConnections)
+            .set({ status: 'pending_reconnect', updatedAt: new Date() })
+            .where(eq(providerConnections.id, connectionId));
+        }
+        throw err;
+      }
 
       // Upsert accounts and balances
       for (const pa of providerAccounts) {

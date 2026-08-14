@@ -16,10 +16,10 @@ import {
   Separator,
   SyncStatusBar,
 } from '@byrdos/ui';
-import { PlaidLinkButton } from '@/components/plaid-link-button';
+import { RelinkButton } from '@/components/relink-button';
 import { revokeConnection, type LinkListItem } from '@/lib/api';
 import { useSession } from 'next-auth/react';
-import { ArrowLeft, RefreshCw, Unlink } from 'lucide-react';
+import { ArrowLeft, Unlink } from 'lucide-react';
 import type { Account } from '@byrdos/domain';
 
 interface IntegrationDetailPageClientProps {
@@ -133,11 +133,12 @@ export function IntegrationDetailPageClient({
             <Separator />
 
             <div className="flex flex-wrap gap-3">
-              {needsRelink && (
-                <PlaidLinkButton onSuccess={() => router.refresh()}>
-                  <RefreshCw className="size-4" />
-                  Re-link account
-                </PlaidLinkButton>
+              {needsRelink && token && conn?.id && (
+                <RelinkButton
+                  connectionId={conn.id}
+                  token={token}
+                  onSuccess={() => router.refresh()}
+                />
               )}
               <Button
                 variant="destructive"

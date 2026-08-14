@@ -194,7 +194,11 @@ export default async function HomePage() {
                     </CardHeader>
                     <CardContent>
                       {conn ? (
-                        <SyncStatusClient connectionId={conn.id} token={token} />
+                        <SyncStatusClient
+                          connectionId={conn.id}
+                          status={conn.status}
+                          token={token}
+                        />
                       ) : (
                         <div className="flex items-center gap-2 text-sm text-muted">
                           <SyncStatusBar status={status} />

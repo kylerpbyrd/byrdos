@@ -84,6 +84,15 @@ describe('FakeProviderAdapter', () => {
     });
   });
 
+  it('should return a deterministic re-link token', async () => {
+    const result = await adapter.initiateRelink(fakeConnection);
+
+    expect(result).toEqual({
+      token: 'fake-relink-token',
+      expiration: '2099-12-31T23:59:59Z',
+    });
+  });
+
   it('should exchange a public token deterministically', async () => {
     const result = await adapter.exchangePublicToken({ publicToken: 'public-123' });
 

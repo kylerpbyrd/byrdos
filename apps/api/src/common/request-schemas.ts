@@ -69,5 +69,31 @@ export const exchangeTokenBodySchema = z.object({
 });
 export type ExchangeTokenBodyDto = z.infer<typeof exchangeTokenBodySchema>;
 
+export const relinkExchangeBodySchema = z.object({
+  publicToken: z.string(),
+  metadata: z
+    .object({
+      institution: z
+        .object({
+          name: z.string(),
+          institution_id: z.string(),
+        })
+        .optional(),
+      accounts: z
+        .array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+            mask: z.string().optional(),
+            type: z.string(),
+            subtype: z.string().optional(),
+          }),
+        )
+        .optional(),
+    })
+    .optional(),
+});
+export type RelinkExchangeBodyDto = z.infer<typeof relinkExchangeBodySchema>;
+
 export const plaidWebhookBodySchema = z.record(z.unknown());
 export type PlaidWebhookBodyDto = z.infer<typeof plaidWebhookBodySchema>;
