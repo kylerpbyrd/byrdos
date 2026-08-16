@@ -1,0 +1,24 @@
+# Fly.io app configuration for services/outbox-relay.
+# Base app name is the production app; CI overrides with --app for staging.
+# Usage:
+#   flyctl deploy --config deploy/fly/outbox-relay.toml --app byrdos-outbox-relay
+#   flyctl deploy --config deploy/fly/outbox-relay.toml --app byrdos-outbox-relay-staging
+#
+# This worker has no public port. Secrets are set via `flyctl secrets set`.
+
+app = 'byrdos-outbox-relay'
+primary_region = 'iad'
+
+[build]
+  dockerfile = '../../Dockerfile'
+  [build.args]
+    PACKAGE = '@byrdos/outbox-relay'
+    SERVICE_DIR = 'services/outbox-relay'
+    CMD = 'node dist/index.js'
+
+[env]
+  NODE_ENV = 'production'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'

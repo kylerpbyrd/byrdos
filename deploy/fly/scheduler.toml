@@ -1,0 +1,24 @@
+# Fly.io app configuration for services/scheduler.
+# Base app name is the production app; CI overrides with --app for staging.
+# Usage:
+#   flyctl deploy --config deploy/fly/scheduler.toml --app byrdos-scheduler
+#   flyctl deploy --config deploy/fly/scheduler.toml --app byrdos-scheduler-staging
+#
+# This worker has no public port. Secrets are set via `flyctl secrets set`.
+
+app = 'byrdos-scheduler'
+primary_region = 'iad'
+
+[build]
+  dockerfile = '../../Dockerfile'
+  [build.args]
+    PACKAGE = '@byrdos/scheduler'
+    SERVICE_DIR = 'services/scheduler'
+    CMD = 'node dist/index.js'
+
+[env]
+  NODE_ENV = 'production'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'

@@ -1,0 +1,24 @@
+# Fly.io app configuration for services/webhook-worker.
+# Base app name is the production app; CI overrides with --app for staging.
+# Usage:
+#   flyctl deploy --config deploy/fly/webhook-worker.toml --app byrdos-webhook-worker
+#   flyctl deploy --config deploy/fly/webhook-worker.toml --app byrdos-webhook-worker-staging
+#
+# This worker has no public port. Secrets are set via `flyctl secrets set`.
+
+app = 'byrdos-webhook-worker'
+primary_region = 'iad'
+
+[build]
+  dockerfile = '../../Dockerfile'
+  [build.args]
+    PACKAGE = '@byrdos/webhook-worker'
+    SERVICE_DIR = 'services/webhook-worker'
+    CMD = 'node dist/index.js'
+
+[env]
+  NODE_ENV = 'production'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'

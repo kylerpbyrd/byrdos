@@ -1,0 +1,24 @@
+# Fly.io app configuration for services/sync-worker.
+# Base app name is the production app; CI overrides with --app for staging.
+# Usage:
+#   flyctl deploy --config deploy/fly/sync-worker.toml --app byrdos-sync-worker
+#   flyctl deploy --config deploy/fly/sync-worker.toml --app byrdos-sync-worker-staging
+#
+# This worker has no public port. Secrets are set via `flyctl secrets set`.
+
+app = 'byrdos-sync-worker'
+primary_region = 'iad'
+
+[build]
+  dockerfile = '../../Dockerfile'
+  [build.args]
+    PACKAGE = '@byrdos/sync-worker'
+    SERVICE_DIR = 'services/sync-worker'
+    CMD = 'node dist/index.js'
+
+[env]
+  NODE_ENV = 'production'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'

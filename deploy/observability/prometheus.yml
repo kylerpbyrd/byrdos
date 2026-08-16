@@ -1,0 +1,22 @@
+# Prometheus scrape configuration for byrdOS observability stack.
+#
+# The collector exposes OTLP-derived metrics on :9464.
+# The api /metrics scrape target is optional and only works when Prometheus can
+# reach the Fly-hosted API (e.g. via a private WireGuard tunnel or a public
+# /metrics endpoint protected by auth).
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['otel-collector:9464']
+
+  # Uncomment and update the target if the API /metrics endpoint is reachable
+  # from the Prometheus host. The API is hosted on Fly.io, not in this Compose.
+  # - job_name: 'byrdos-api'
+  #   static_configs:
+  #     - targets: ['byrdos-api.internal:4000']
+  #   metrics_path: '/metrics'

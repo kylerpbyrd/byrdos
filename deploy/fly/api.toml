@@ -1,0 +1,49 @@
+# Fly.io app configuration for apps/api (NestJS).
+# Base app name is the production app; CI overrides with --app for staging.
+# Usage:
+#   flyctl deploy --config deploy/fly/api.toml --app byrdos-api
+#   flyctl deploy --config deploy/fly/api.toml --app byrdos-api-staging
+#
+# Secrets are set via `flyctl secrets set --app byrdos-api` (see docs/deployment.md).
+
+app = 'byrdos-api'
+primary_region = 'iad'
+
+[build]
+  dockerfile = '../../Dockerfile'
+  [build.args]
+    PACKAGE = '@byrdos/api'
+    SERVICE_DIR = 'apps/api'
+    CMD = 'node dist/main.js'
+
+[env]
+  NODE_ENV = 'production'
+  PORT = '4000'
+
+[http_service]
+  internal_port = 4000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+  [[http_service.checks]]
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/health'
+    protocol = 'http'
+
+  [[http_service.checks]]
+    interval = '15s'
+    timeout = '5s'
+    grace_period = '30s'
+    method = 'GET'
+    path = '/health/ready'
+    protocol = 'http'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'
