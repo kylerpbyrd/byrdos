@@ -1,0 +1,33 @@
+name: Secret Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks:
+    name: Scan for secrets
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history is required so gitleaks can scan every commit in the push/PR.
+          fetch-depth: 0
+
+      # Baseline: a single pre-existing finding in the git history for .env is
+      # recorded in .gitleaksignore. .env is gitignored and local-only; the
+      # finding was introduced before secret-scanning was enforced. No false
+      # positives were found in test fixtures or documentation.
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,10 @@
+if command -v gitleaks >/dev/null 2>&1; then
+  if gitleaks protect --help >/dev/null 2>&1; then
+    gitleaks protect --staged --no-banner --redact --verbose
+  else
+    gitleaks detect --source . --staged --no-banner --redact --verbose
+  fi
+else
+  echo "⚠ gitleaks not installed — skipping pre-commit secret scan (CI will still block)."
+  echo "  Install: scoop install gitleaks  |  brew install gitleaks"
+fi

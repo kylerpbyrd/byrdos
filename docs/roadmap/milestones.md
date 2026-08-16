@@ -417,6 +417,8 @@ constraints, `SyncController` queries db directly. Ready for M5 frontend develop
 
 M6 governance artifacts initiated: SLO ADR, production migration runbook, and milestone status tracking updated.
 
+Real OpenTelemetry span emission complete (ADR-0013): `packages/observability` now ships a real OTEL tracer (`@opentelemetry/sdk-trace-node` v2), and the sync pipeline emits `sync.orchestrate` → `sync.accounts`/`sync.transactions` → `sync.job` spans with W3C trace-context propagated across BullMQ process boundaries. `sync.job` is emitted retroactively at terminal status (idempotent, exactly once per job). Console exporter locally; OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Runtime-verified against the live Plaid sandbox (success + failure paths). HTTP server auto-instrumentation, k6, ZAP/gitleaks, and DLQ alerting remain.
+
 ---
 
 ## Critical Path

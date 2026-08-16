@@ -6,6 +6,7 @@ export interface AccountsJobData {
   integrationId: string;
   providerId: string;
   userId: string;
+  traceContext?: Record<string, string>;
 }
 
 export const ACCOUNTS_JOB: QueueName = 'accounts';

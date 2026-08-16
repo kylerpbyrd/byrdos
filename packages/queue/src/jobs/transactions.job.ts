@@ -9,6 +9,7 @@ export interface TransactionsJobData {
   cursor: string | null;
   /** Start date for initial sync */
   startDate?: string;
+  traceContext?: Record<string, string>;
 }
 
 export const TRANSACTIONS_JOB: QueueName = 'transactions';

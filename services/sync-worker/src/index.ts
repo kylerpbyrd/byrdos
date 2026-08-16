@@ -1,4 +1,8 @@
-import { createLogger } from '@byrdos/observability';
+import {
+  createLogger,
+  initTracing,
+  shutdownTracing,
+} from '@byrdos/observability';
 import {
   createAccountsWorker,
   createTransactionsWorker,
@@ -8,6 +12,7 @@ import {
 const logger = createLogger('sync-worker');
 
 async function main() {
+  initTracing('sync-worker');
   logger.info('Starting sync worker...');
 
   const syncWorker = createSyncWorker();
@@ -24,6 +29,7 @@ async function main() {
     await syncWorker.close();
     await accountsWorker.close();
     await transactionsWorker.close();
+    await shutdownTracing();
     process.exit(0);
   });
 }

@@ -11,4 +11,18 @@ export {
   type QueueMetricsCollector,
 } from './queue-metrics.js';
 
-export { getTracer, setTracer, NoopTracer, type Tracer } from './tracer.js';
+export {
+  type AttributeValue,
+  type Span,
+  type StartSpanOptions,
+  type Tracer,
+  type InitTracingOptions,
+  NoopSpan,
+  NoopTracer,
+  getTracer,
+  setTracer,
+  initTracing,
+  shutdownTracing,
+  injectTraceContext,
+  extractTraceContext,
+} from './tracer.js';

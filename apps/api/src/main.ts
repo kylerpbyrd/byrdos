@@ -3,13 +3,15 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { pinoHttp } from 'pino-http';
 import helmet from 'helmet';
-import { createLogger } from '@byrdos/observability';
+import { createLogger, initTracing, shutdownTracing } from '@byrdos/observability';
 import { AppModule } from './app.module.js';
 import { GlobalExceptionFilter } from './common/exception.filter.js';
 
 const logger = createLogger('api');
 
 async function bootstrap() {
+  initTracing('api', { instrumentHttp: true });
+
   const app = await NestFactory.create(AppModule);
 
   app.use(
@@ -84,5 +86,13 @@ async function bootstrap() {
     credentials: true,
   });
   await app.listen(process.env.PORT || 4000);
+
+  const shutdown = async () => {
+    await app.close();
+    await shutdownTracing();
+    process.exit(0);
+  };
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 bootstrap();
