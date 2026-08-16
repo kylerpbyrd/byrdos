@@ -1,0 +1,38 @@
+name: k6 Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target application URL (for reference; set API_BASE for the API scripts)'
+        required: false
+        default: 'https://<your-staging-host>'
+      api_base:
+        description: 'API base URL passed to k6 scripts as API_BASE'
+        required: true
+        default: 'http://localhost:4000'
+
+permissions:
+  contents: read
+
+jobs:
+  k6:
+    name: k6 smoke and load tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # NOTE: Remote staging must be reachable from GitHub Actions runners.
+      # Localhost defaults only work when the runner can resolve them (self-hosted or local testing).
+      - name: k6 smoke test
+        run: |
+          docker run --rm -i \
+            -e API_BASE=${{ github.event.inputs.api_base }} \
+            grafana/k6 run - < tests/load/k6-smoke.js
+
+      - name: k6 load test
+        run: |
+          docker run --rm -i \
+            -e API_BASE=${{ github.event.inputs.api_base }} \
+            grafana/k6 run - < tests/load/k6-load.js
