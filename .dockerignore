@@ -1,0 +1,43 @@
+# Secrets / env (runtime-injected, never baked into images)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Dependencies
+node_modules
+.pnpm-store
+
+# Git
+.git
+.gitignore
+
+# Turbo / build caches
+.turbo
+*.tsbuildinfo
+
+# Logs
+*.log
+logs
+
+# Coverage / tests
+coverage
+.nyc_output
+*.test.ts
+*.spec.ts
+vitest.config.*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker itself
+docker-compose*.yml
+Dockerfile*
+.dockerignore

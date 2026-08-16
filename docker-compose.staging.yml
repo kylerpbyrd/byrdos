@@ -1,0 +1,161 @@
+# Staging stack for byrdOS
+# Usage:
+#   1. cp .env.example .env.staging   # then fill in real secrets
+#   2. docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
+#
+# Runtime secrets are read from .env.staging and injected into containers;
+# they are never baked into the images. This file is platform-agnostic and
+# can be deployed to Fly.io, Render, AWS ECS, or any container host that
+# supports Docker Compose.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-byrdos_staging}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-byrdos_staging}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PACKAGE: "@byrdos/db"
+        SERVICE_DIR: packages/db
+        CMD: pnpm run db:migrate
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PACKAGE: "@byrdos/api"
+        SERVICE_DIR: apps/api
+        CMD: node dist/main.js
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-4000}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      # Add JWT/auth/provider secrets required by apps/api below
+    ports:
+      - "4000:4000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  sync-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PACKAGE: "@byrdos/sync-worker"
+        SERVICE_DIR: services/sync-worker
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  webhook-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PACKAGE: "@byrdos/webhook-worker"
+        SERVICE_DIR: services/webhook-worker
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PACKAGE: "@byrdos/scheduler"
+        SERVICE_DIR: services/scheduler
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  outbox-relay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PACKAGE: "@byrdos/outbox-relay"
+        SERVICE_DIR: services/outbox-relay
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
