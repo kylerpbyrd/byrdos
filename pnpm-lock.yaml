@@ -416,6 +416,9 @@ importers:
       '@byrdos/domain':
         specifier: workspace:*
         version: link:../domain
+      jose:
+        specifier: ^5.9.0
+        version: 5.10.0
       plaid:
         specifier: ^30.0.0
         version: 30.1.0

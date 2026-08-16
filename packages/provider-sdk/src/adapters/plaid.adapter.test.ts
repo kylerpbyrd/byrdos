@@ -1,5 +1,5 @@
-import * as crypto from 'crypto';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { generateKeyPair, exportJWK, SignJWT, type JWK, type KeyLike } from 'jose';
+import { vi, describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import {
   mockPlaidLinkToken,
   mockPlaidAccessToken,
@@ -10,6 +10,8 @@ import {
 import { PlaidAdapter } from './plaid.adapter.js';
 import { ProviderError } from '../errors.js';
 import type { ProviderConnection, RawWebhook, SyncCursor, TransactionBatch } from '@byrdos/contracts';
+
+type TestJwk = JWK & { expired_at?: number };
 
 const mockPlaidApi = {
   linkTokenCreate: vi.fn(),
@@ -27,6 +29,18 @@ vi.mock('plaid', () => {
     Products: { Transactions: 'transactions', Auth: 'auth' },
     CountryCode: { Us: 'US' },
   };
+});
+
+let testKeyPair: { privateKey: KeyLike; publicKey: KeyLike };
+let testPublicJwk: TestJwk;
+
+beforeAll(async () => {
+  testKeyPair = await generateKeyPair('ES256');
+  testPublicJwk = await exportJWK(testKeyPair.publicKey);
+  testPublicJwk.kid = 'test-kid';
+  testPublicJwk.alg = 'ES256';
+  testPublicJwk.use = 'sig';
+  testPublicJwk.expired_at = Math.floor(Date.now() / 1000) + 3600;
 });
 
 function createAdapter(): PlaidAdapter {
@@ -55,20 +69,27 @@ function createConnection(accessToken?: string): ProviderConnection {
   return connection;
 }
 
-function createRawWebhook(overrides?: Partial<RawWebhook>): RawWebhook {
+async function createRawWebhook(overrides?: Partial<RawWebhook>): Promise<RawWebhook> {
   const payload = overrides?.payload ?? { item_id: mockPlaidItemId };
   return {
     providerId: 'plaid',
     payload,
-    signature: overrides?.signature ?? createWebhookSignature(payload),
+    signature: overrides?.signature ?? (await createWebhookSignature(payload)),
     webhookType: overrides?.webhookType ?? 'TRANSACTIONS',
     webhookCode: overrides?.webhookCode ?? 'SYNC_UPDATES_AVAILABLE',
   };
 }
 
-function createWebhookSignature(payload: Record<string, unknown>): string {
-  const signed = crypto.createHmac('sha256', 'test-key').update(JSON.stringify(payload)).digest('hex');
-  return `t=1234567890,v1=${signed}`;
+async function createWebhookSignature(
+  payload: Record<string, unknown>,
+  overrides?: { kid?: string; iat?: number; exp?: number },
+): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  return await new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'ES256', kid: overrides?.kid ?? testPublicJwk.kid })
+    .setIssuedAt(overrides?.iat ?? now)
+    .setExpirationTime(overrides?.exp ?? now + 300)
+    .sign(testKeyPair.privateKey);
 }
 
 describe('PlaidAdapter', () => {
@@ -76,11 +97,22 @@ describe('PlaidAdapter', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: vi.fn().mockResolvedValue({
+          key: testPublicJwk,
+          request_id: 'req-test',
+        }),
+      }),
+    );
     adapter = createAdapter();
   });
 
   afterEach(() => {
     delete process.env.PLAID_ALLOW_PRODUCTION;
+    vi.unstubAllGlobals();
   });
 
   describe('constructor', () => {
@@ -614,7 +646,7 @@ describe('PlaidAdapter', () => {
 
   describe('handleWebhook', () => {
     it('SYNC_UPDATES_AVAILABLE → sync_triggered', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'SYNC_UPDATES_AVAILABLE' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'SYNC_UPDATES_AVAILABLE' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -624,7 +656,7 @@ describe('PlaidAdapter', () => {
     });
 
     it('ITEM_LOGIN_REQUIRED → reauth_required', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'ITEM_LOGIN_REQUIRED' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'ITEM_LOGIN_REQUIRED' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -634,7 +666,7 @@ describe('PlaidAdapter', () => {
     });
 
     it('DEFAULT_UPDATE → sync_triggered', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'DEFAULT_UPDATE' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'DEFAULT_UPDATE' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -644,7 +676,7 @@ describe('PlaidAdapter', () => {
     });
 
     it('INITIAL_UPDATE → sync_triggered', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'INITIAL_UPDATE' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'INITIAL_UPDATE' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -654,7 +686,7 @@ describe('PlaidAdapter', () => {
     });
 
     it('TRANSACTIONS_REMOVED → sync_triggered', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'TRANSACTIONS_REMOVED' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'TRANSACTIONS_REMOVED' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -664,7 +696,7 @@ describe('PlaidAdapter', () => {
     });
 
     it('ERROR → error action', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'ERROR' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'ERROR' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -674,7 +706,7 @@ describe('PlaidAdapter', () => {
     });
 
     it('PENDING_EXPIRATION → ignored', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'PENDING_EXPIRATION' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'PENDING_EXPIRATION' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -684,7 +716,7 @@ describe('PlaidAdapter', () => {
     });
 
     it('unknown webhook code → ignored', async () => {
-      const result = await adapter.handleWebhook(createRawWebhook({ webhookCode: 'UNKNOWN_CODE' }));
+      const result = await adapter.handleWebhook(await createRawWebhook({ webhookCode: 'UNKNOWN_CODE' }));
 
       expect(result).toEqual({
         acknowledged: true,
@@ -693,28 +725,28 @@ describe('PlaidAdapter', () => {
       });
     });
 
-    it('should return error when v1 signature is missing', async () => {
+    it('should return error when signature is missing', async () => {
       const result = await adapter.handleWebhook(
-        createRawWebhook({ signature: 't=1234567890' }),
+        await createRawWebhook({ signature: '' }),
       );
 
       expect(result).toMatchObject({
         acknowledged: false,
         action: 'error',
       });
-      expect(result.message).toContain('Missing v1 signature');
+      expect(result.message).toContain('Missing Plaid-Verification JWT header');
     });
 
     it('should return error when signature verification fails', async () => {
       const result = await adapter.handleWebhook(
-        createRawWebhook({ signature: 't=123,v1=invalid-signature' }),
+        await createRawWebhook({ signature: 'invalid-jwt-token' }),
       );
 
       expect(result).toMatchObject({
         acknowledged: false,
         action: 'error',
       });
-      expect(result.message).toContain('signature');
+      expect(result.message).toContain('Invalid Plaid-Verification JWT header');
     });
   });
 });

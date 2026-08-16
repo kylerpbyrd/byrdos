@@ -1,4 +1,3 @@
-import * as crypto from 'crypto';
 import {
   Configuration,
   PlaidApi,
@@ -12,6 +11,7 @@ import {
   type Transaction,
   type RemovedTransaction,
 } from 'plaid';
+import { importJWK, jwtVerify, decodeProtectedHeader, type JWK } from 'jose';
 import type { IProviderAdapter } from '../adapter.interface.js';
 import type {
   ProviderId,
@@ -29,6 +29,8 @@ import type {
   WebhookResult,
 } from '@byrdos/contracts';
 import { ProviderError } from '../errors.js';
+
+type PlaidWebhookVerificationKey = JWK & { created_at?: number; expired_at?: number };
 
 export interface PlaidAdapterConfig {
   clientId: string;
@@ -294,10 +296,12 @@ export class PlaidAdapter implements IProviderAdapter {
     }
   }
 
+  private readonly webhookKeyCache = new Map<string, { key: PlaidWebhookVerificationKey; expiredAt: number }>();
+
   async handleWebhook(event: RawWebhook): Promise<WebhookResult> {
     try {
       // Verify webhook signature
-      this.verifyWebhookSignature(event.payload, event.signature);
+      await this.verifyWebhookSignature(event.payload, event.signature);
 
       const code = event.webhookCode;
 
@@ -326,23 +330,99 @@ export class PlaidAdapter implements IProviderAdapter {
     }
   }
 
-  private verifyWebhookSignature(payload: Record<string, unknown>, signatureHeader: string): void {
-    const key = this.config.webhookVerificationKey;
+  private getPlaidBaseUrl(): string {
+    switch (this.config.environment) {
+      case 'production':
+        return 'https://production.plaid.com';
+      case 'development':
+        return 'https://development.plaid.com';
+      case 'sandbox':
+      default:
+        return 'https://sandbox.plaid.com';
+    }
+  }
 
-    // Plaid sends: t=timestamp,v1=signature
-    // Simplified verification for M2; full verification in M6 security review
-    const signed = crypto.createHmac('sha256', key).update(JSON.stringify(payload)).digest('hex');
+  private async fetchWebhookVerificationKey(expectedKid: string): Promise<PlaidWebhookVerificationKey> {
+    const response = await fetch(`${this.getPlaidBaseUrl()}/webhook_verification_key/get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: this.config.clientId,
+        secret: this.config.secret,
+      }),
+    });
 
-    // The v1 signature is the last part after the comma
-    const parts = signatureHeader.split(',');
-    const v1Sig = parts.find((p: string) => p.startsWith('v1='));
-    if (!v1Sig) {
-      throw new Error('Missing v1 signature in webhook header');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch Plaid webhook verification key: ${response.status} ${response.statusText}`);
     }
 
-    const expectedSig = v1Sig.substring(3); // Remove 'v1='
-    if (signed !== expectedSig) {
-      throw new Error('Webhook signature verification failed');
+    const data = (await response.json()) as {
+      key?: PlaidWebhookVerificationKey;
+      request_id?: string;
+    };
+
+    if (!data.key?.kid) {
+      throw new Error('Plaid webhook verification key response missing key');
+    }
+
+    if (data.key.kid !== expectedKid) {
+      throw new Error(`Plaid webhook verification key kid mismatch: expected ${expectedKid}, got ${data.key.kid}`);
+    }
+
+    return data.key;
+  }
+
+  private async verifyWebhookSignature(_payload: Record<string, unknown>, signatureHeader: string): Promise<void> {
+    if (!signatureHeader) {
+      throw new Error('Missing Plaid-Verification JWT header');
+    }
+
+    let header;
+    try {
+      header = decodeProtectedHeader(signatureHeader);
+    } catch {
+      throw new Error('Invalid Plaid-Verification JWT header');
+    }
+
+    const kid = header.kid;
+    const headerAlg = header.alg;
+
+    if (typeof kid !== 'string' || !kid) {
+      throw new Error('Plaid-Verification JWT missing kid');
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const cached = this.webhookKeyCache.get(kid);
+    let key: PlaidWebhookVerificationKey;
+
+    if (!cached || now >= cached.expiredAt) {
+      key = await this.fetchWebhookVerificationKey(kid);
+      const expiredAt = Number(key.expired_at);
+      if (!Number.isFinite(expiredAt)) {
+        throw new Error('Plaid webhook verification key missing expired_at');
+      }
+      this.webhookKeyCache.set(kid, { key, expiredAt });
+    } else {
+      key = cached.key;
+    }
+
+    if (!key.alg) {
+      throw new Error('Plaid webhook verification key missing alg');
+    }
+
+    if (headerAlg !== key.alg) {
+      throw new Error(`Plaid-Verification JWT alg mismatch: expected ${key.alg}, got ${headerAlg}`);
+    }
+
+    const { payload } = await jwtVerify(signatureHeader, await importJWK(key), {
+      algorithms: [key.alg],
+    });
+
+    const iat = Number(payload.iat);
+    if (!Number.isFinite(iat) || iat < now - 300 || iat > now + 300) {
+      throw new Error('Plaid-Verification JWT issued outside clock-skew window');
     }
   }
 

@@ -6,7 +6,6 @@ import type {
   ExchangeResult,
   ProviderAccount,
   ProviderBalance,
-  ProviderTransaction,
   TransactionBatch,
   SyncCursor,
   DateRange,

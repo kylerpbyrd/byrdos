@@ -15,6 +15,7 @@
   "dependencies": {
     "@byrdos/contracts": "workspace:*",
     "@byrdos/domain": "workspace:*",
+    "jose": "^5.9.0",
     "plaid": "^30.0.0"
   },
   "devDependencies": {

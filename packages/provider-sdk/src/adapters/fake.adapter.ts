@@ -68,6 +68,7 @@ export class FakeProviderAdapter implements IProviderAdapter {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async exchangePublicToken(_payload: LinkCallback): Promise<ExchangeResult> {
     const connection: ProviderConnection = {
       id: '',
@@ -92,7 +93,6 @@ export class FakeProviderAdapter implements IProviderAdapter {
     return FAKE_ACCOUNTS.map((account) => ({ ...account }));
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getBalances(
     _connection: ProviderConnection,
     accountExternalIds?: string[],
