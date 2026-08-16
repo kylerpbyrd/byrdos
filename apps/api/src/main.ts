@@ -79,7 +79,7 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   app.setGlobalPrefix('api', {
-    exclude: ['/health', '/health/(.*)'],
+    exclude: ['/health', '/health/(.*)', '/metrics', '/metrics/(.*)'],
   });
   app.enableCors({
     origin: process.env.WEB_URL || 'http://localhost:3000',

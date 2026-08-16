@@ -19,13 +19,6 @@ async function main() {
     logger.info(`Enqueued ${c} sync jobs`);
   }, 4 * 60 * 60 * 1000);
 
-  // Every 30 minutes: balance fast-lane
-  setInterval(async () => {
-    logger.info('Running balance fast-lane...');
-    const c = await scheduler.enqueueBalanceFastlane();
-    logger.info(`Enqueued ${c} balance syncs`);
-  }, 30 * 60 * 1000);
-
   // Every 30 minutes: DLQ check
   setInterval(async () => {
     await scheduler.checkDeadLetterQueue();

@@ -32,7 +32,7 @@ export async function markSyncJobFailed(
   syncJobId: string,
   error: string,
   outcome: 'failed' | 'reauth_required' = 'failed',
-): Promise<void> {
+): Promise<boolean> {
   const [row] = await db
     .update(syncJobs)
     .set({ status: 'failed', error, finishedAt: new Date() })
@@ -45,7 +45,7 @@ export async function markSyncJobFailed(
     .returning({ startedAt: syncJobs.startedAt });
 
   if (!row?.startedAt) {
-    return;
+    return false;
   }
 
   emitSyncJobSpan({
@@ -54,6 +54,8 @@ export async function markSyncJobFailed(
     outcome,
     error,
   });
+
+  return true;
 }
 
 interface EmitSyncJobSpanOptions {

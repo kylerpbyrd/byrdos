@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { eq, lt } from 'drizzle-orm';
-import { createLogger } from '@byrdos/observability';
+import { createLogger, sendAlert } from '@byrdos/observability';
 import { db, integrations, providerConnections, transactions } from '@byrdos/db';
 import { QUEUES, type SyncJobData } from '@byrdos/queue';
 import { connection } from './redis.js';
@@ -50,10 +50,12 @@ export class Scheduler {
 
   /**
    * Balance fast-lane: light balance-only sync every 30 minutes.
-   * For now, this enqueues a full sync — will be optimized in M4.
+   *
+   * TODO: Implement a balance-only fast-lane path. Currently balances refresh
+   * via the 4-hour scheduled sync and webhook/on-demand triggers.
    */
   async enqueueBalanceFastlane(): Promise<number> {
-    return this.enqueueScheduledSyncs();
+    return 0;
   }
 
   /**
@@ -81,7 +83,7 @@ export class Scheduler {
 
     if (waiting > 0) {
       logger.warn(`[ALERT] ${waiting} jobs stuck in dead-letter queue`);
-      // In production: emit to monitoring/alerting system
+      await sendAlert(`${waiting} jobs stuck in dead-letter queue`);
     }
   }
 }

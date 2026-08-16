@@ -26,3 +26,13 @@ export {
   injectTraceContext,
   extractTraceContext,
 } from './tracer.js';
+
+export {
+  getMetricsText,
+  syncCursorFreshnessRatioGauge,
+  syncJobsTotalCounter,
+  queueDepthGauge,
+  syncSuccessRatioGauge,
+} from './metrics.js';
+
+export { sendAlert } from './alert.js';

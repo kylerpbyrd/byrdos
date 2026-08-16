@@ -8,6 +8,7 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
 import { AccountsModule } from './accounts/accounts.module.js';
 import { TransactionsModule } from './transactions/transactions.module.js';
 import { HealthModule } from './health/health.module.js';
+import { MetricsModule } from './metrics/metrics.module.js';
 import { CommonThrottlerModule } from './common/throttler.module.js';
 
 const globalGuards: Provider[] = [
@@ -27,6 +28,7 @@ const globalGuards: Provider[] = [
     AccountsModule,
     TransactionsModule,
     HealthModule,
+    MetricsModule,
   ],
   providers: globalGuards,
 })

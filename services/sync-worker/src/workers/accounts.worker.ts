@@ -1,4 +1,4 @@
-import { Worker } from 'bullmq';
+import { Queue, Worker } from 'bullmq';
 import { connection } from '../redis.js';
 import { QUEUES, type AccountsJobData } from '@byrdos/queue';
 import {
@@ -162,7 +162,13 @@ export function createAccountsWorker(): Worker<AccountsJobData> {
         err instanceof ProviderError && err.code === 'reauth_required'
           ? 'reauth_required'
           : 'failed';
-      void markSyncJobFailed(job.data.syncJobId, err.message, outcome);
+      void (async () => {
+        const transitioned = await markSyncJobFailed(job.data.syncJobId, err.message, outcome);
+        if (transitioned) {
+          const deadQueue = new Queue(QUEUES.SYNC_DEAD, { connection });
+          await deadQueue.add(`dead-${job.data.syncJobId}`, job.data);
+        }
+      })();
     }
   });
 
