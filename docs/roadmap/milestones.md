@@ -415,9 +415,16 @@ constraints, `SyncController` queries db directly. Ready for M5 frontend develop
 
 ### Completion Notes
 
-M6 governance artifacts initiated: SLO ADR, production migration runbook, and milestone status tracking updated.
+M6 is substantially complete except for production deployment (blocked on the platform decision: Fly/Render/Neon/Supabase).
 
-Real OpenTelemetry span emission complete (ADR-0013): `packages/observability` now ships a real OTEL tracer (`@opentelemetry/sdk-trace-node` v2), and the sync pipeline emits `sync.orchestrate` → `sync.accounts`/`sync.transactions` → `sync.job` spans with W3C trace-context propagated across BullMQ process boundaries. `sync.job` is emitted retroactively at terminal status (idempotent, exactly once per job). Console exporter locally; OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Runtime-verified against the live Plaid sandbox (success + failure paths). HTTP server auto-instrumentation, k6, ZAP/gitleaks, and DLQ alerting remain.
+- **OpenTelemetry tracing** (ADR-0013): real OTEL SDK in `packages/observability`; `sync.orchestrate` → `sync.accounts`/`sync.transactions` → `sync.job` spans with W3C trace-context across BullMQ; HTTP server auto-instrumentation (`http.route`/`http.response.status_code`). Runtime-verified live (success + failure paths).
+- **Metrics**: Prometheus `/metrics` with SLO gauges (`byrdos_sync_cursor_freshness_ratio`, `byrdos_sync_success_ratio`, `byrdos_queue_depth`), `prom-client` + `collectDefaultMetrics`.
+- **Sync hardening**: real dead-letter queue (terminal-failed jobs → `sync.dead`, exactly-once) + `sendAlert` webhook sink; removed the redundant 30-min balance fast-lane.
+- **Security**: gitleaks CI + husky pre-commit hook; Plaid webhook JWT verification (replaced the HMAC stub) via `jose`; CodeQL + `pnpm audit` in CI. A public-history secret leak (`.env`) was remediated: secrets rotated, history scrubbed, `SECURITY.md` added.
+- **Load/security validation**: k6 smoke/load scripts (ADR-0012 thresholds) + OWASP ZAP baseline scan, both wired as `workflow_dispatch` CI jobs + a local runbook.
+- **Deployment prep**: platform-agnostic `turbo prune` Dockerfile, `.dockerignore`, `docker-compose.staging.yml` (postgres, redis, one-shot `migrate`, api, workers), and `docs/deployment.md`.
+
+Remaining: production deployment (platform wiring + live deploy + one prod sync + SLO alerting).
 
 ---
 
@@ -459,12 +466,12 @@ gantt
 | M0 — Foundation | ✅ Complete | 2026-07-13 | 2026-07-20 | DevOps + Architect |
 | M1 — Identity & Auth | ✅ Complete | 2026-07-20 | 2026-07-20 | Security + Frontend + Backend |
 | M2 — Provider Abstraction + Plaid | ✅ Complete | 2026-07-20 | 2026-07-20 | API + Security + Backend |
-| M3 — Sync Pipeline | ⚠️ Partial | 2026-07-20 | 2026-07-20 | Backend + API + Testing |
-| M4 — API & Read Models | ⚠️ Partial | 2026-07-20 | 2026-07-21 | Backend + API |
+| M3 — Sync Pipeline | ✅ Complete | 2026-07-20 | 2026-07-20 | Backend + API + Testing |
+| M4 — API & Read Models | ✅ Complete | 2026-07-20 | 2026-07-21 | Backend + API |
 | M4.5 — Hardening & Integration | ✅ Complete | 2026-07-21 | 2026-07-21 | Documentation + API + Architect |
-| M4.6 — Connect→Sync→Display Repair | 🚧 In Progress | — | — | Backend + API + Testing |
-| M5 — Dashboard Frontend | ⏸️ Blocked | — | — | Frontend + Testing |
-| M6 — Observability, Hardening, Prod | 🚧 In Progress | — | — | DevOps + Security + Backend |
+| M4.6 — Connect→Sync→Display Repair | ✅ Complete | 2026-07-22 | 2026-08-14 | Backend + API + Testing |
+| M5 — Dashboard Frontend | ✅ Complete | 2026-08-14 | 2026-08-14 | Frontend + Testing |
+| M6 — Observability, Hardening, Prod | 🚧 In Progress | 2026-08-14 | — | DevOps + Security + Backend |
 
 ---
 
