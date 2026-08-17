@@ -67,7 +67,7 @@ New RFC authors should copy this template into a new file named according to the
 
 | # | Title | Status | Author | Date |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| RFC-0002 | Platform Architecture and Roadmap | Proposed | Documentation Agent (byrdOS) | 2026-08-16 |
 
 This table should be updated when new RFCs are proposed.
 
