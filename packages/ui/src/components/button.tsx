@@ -6,22 +6,22 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../lib/utils.js';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-safe:duration-200 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 motion-safe:duration-200 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive: 'bg-destructive text-white hover:bg-destructive/90',
-        outline: 'border border-border bg-background hover:bg-surface hover:text-foreground',
-        secondary: 'bg-surface text-foreground border border-border hover:bg-surface-elevated',
-        ghost: 'hover:bg-surface hover:text-foreground',
+        primary: 'rounded-full bg-primary text-primary-foreground hover:bg-primary/90',
+        destructive: 'rounded-md bg-destructive text-white hover:bg-destructive/90',
+        outline: 'rounded-md border border-border bg-background hover:bg-surface hover:text-foreground',
+        secondary: 'rounded-md bg-surface text-foreground border border-border hover:bg-surface-elevated',
+        ghost: 'rounded-md hover:bg-surface hover:text-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-12 rounded-md px-6 text-lg',
-        icon: 'size-10',
+        default: 'h-10 px-5 py-2',
+        sm: 'h-8 px-3 text-xs',
+        lg: 'h-12 px-6 text-lg',
+        icon: 'size-10 rounded-full',
       },
     },
     defaultVariants: {

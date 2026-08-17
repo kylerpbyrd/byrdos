@@ -87,7 +87,6 @@ export function SyncStatusBar({
     const fetcher = syncStatusFetcher;
 
     let cancelled = false;
-    let intervalId: ReturnType<typeof setInterval>;
 
     async function tick() {
       try {
@@ -107,7 +106,7 @@ export function SyncStatusBar({
     }
 
     tick();
-    intervalId = setInterval(tick, 3000);
+    const intervalId = setInterval(tick, 3000);
 
     return () => {
       cancelled = true;
